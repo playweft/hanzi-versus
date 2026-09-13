@@ -1,0 +1,11 @@
+{
+  "name": "hanzi-versus",
+  "compatibility_date": "2026-09-13",
+  "build": {
+    "command": "npm run build"
+  },
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

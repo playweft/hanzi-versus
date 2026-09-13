@@ -27,6 +27,19 @@ game.lua       双人房间的权威状态机
 data/          THUOCL 四字成语题库
 ```
 
+## 本地开发与部署
+
+```sh
+npm install
+npm run dev
+npm run build
+```
+
+Vite 将 `public/` 中的 `playweft.json`、`game.lua`、`data/` 和图标原样复制到构建产物 `dist/`。Cloudflare Workers 的构建命令设为 `npm run build`，部署命令设为 `npx wrangler deploy`。
+
+与 `playweft-extras` 一致，设置 `BASE_PATH=/hanzi-versus/` 可部署到子路径；未设置时默认为 `/`。
+此时完整游戏包会输出到 `dist/hanzi-versus/`，包括 `playweft.json`。
+
 ## 目前的公平性边界
 
 Playweft v1 的 `languageModel.prompt` 只能由 iframe 发起，Lua 房间状态机不能直接把隐藏答案交给模型。因此双人模式由房主的客户端取得隐藏答案并请求 AI，再把提示提交给 Lua；其他玩家不会收到答案，但房主理论上可以通过浏览器调试工具看到它。
