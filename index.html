@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#123d3b" />
+    <title>诗词对决</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header>
+        <p class="eyebrow">HANZI VERSUS</p>
+        <h1>诗词对决</h1>
+        <p id="mode-label" class="mode-label">单人模式</p>
+      </header>
+
+      <section class="round-card" aria-live="polite">
+        <div class="round-topline">
+          <span id="round-label">第 1 / 6 轮</span>
+          <span id="timer" class="timer">--:--</span>
+        </div>
+        <p id="status" class="status">正在准备第一条提示…</p>
+        <div id="hint" class="hint" aria-label="AI 提示">？</div>
+        <p class="hint-caption">AI 二字提示</p>
+      </section>
+
+      <section class="history-card">
+        <p class="section-title">已获得的提示</p>
+        <div id="history" class="history" aria-live="polite"></div>
+      </section>
+
+      <form id="guess-form" class="guess-form">
+        <label for="guess">猜一个四字成语</label>
+        <div class="guess-row">
+          <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="输入四个汉字" />
+          <button id="submit" type="submit">提交</button>
+        </div>
+      </form>
+
+      <section id="notice" class="notice" hidden></section>
+      <button id="next" class="next" type="button" hidden>下一题</button>
+
+      <footer>
+        <span>先错者会给对手留下 0.8 秒竞态窗口；未竞态提交时，对手获得 8 秒延时猜测。</span>
+      </footer>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

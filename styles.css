@@ -1,0 +1,37 @@
+:root {
+  color: #123d3b;
+  background: #ece6d8;
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at 20% 0%, #fffdf5 0 16%, transparent 46%), linear-gradient(145deg, #dce7df, #f2e9d9 52%, #cedfda); }
+button, input { font: inherit; }
+.game-shell { width: min(100%, 560px); min-height: 100vh; margin: auto; padding: 34px 20px 24px; display: flex; flex-direction: column; gap: 15px; }
+header { text-align: center; }
+.eyebrow { margin: 0; color: #a77a30; font: 700 11px/1.1 ui-sans-serif, system-ui; letter-spacing: .24em; }
+h1 { margin: 5px 0 1px; font-size: clamp(34px, 11vw, 52px); letter-spacing: .1em; }
+.mode-label { margin: 0; color: #607670; font: 13px/1.5 ui-sans-serif, system-ui; }
+.round-card, .history-card { border: 1px solid #d4bd86; border-radius: 20px; background: rgba(255, 252, 243, .84); box-shadow: 0 12px 25px rgba(27, 57, 49, .09); }
+.round-card { padding: 17px 18px 15px; text-align: center; }
+.round-topline { display: flex; justify-content: space-between; color: #76644a; font: 700 13px/1.4 ui-sans-serif, system-ui; }
+.timer { color: #a94635; font-variant-numeric: tabular-nums; }
+.status { min-height: 24px; margin: 14px 0 4px; color: #587069; font-size: 14px; }
+.hint { min-height: 92px; display: grid; place-items: center; color: #0e3c39; font-size: 56px; font-weight: 700; letter-spacing: .28em; text-indent: .28em; text-shadow: 0 2px #fff; }
+.hint-caption { margin: 0; color: #a77a30; font: 700 12px/1 ui-sans-serif, system-ui; letter-spacing: .15em; }
+.history-card { padding: 14px 15px; }
+.section-title { margin: 0 0 10px; color: #76644a; font: 700 12px/1 ui-sans-serif, system-ui; letter-spacing: .12em; }
+.history { display: flex; min-height: 34px; flex-wrap: wrap; gap: 8px; }
+.history span { padding: 7px 11px; border-radius: 10px; background: #e5efe9; color: #214d46; font-weight: 700; }
+.guess-form { display: grid; gap: 8px; }
+.guess-form label { padding-left: 3px; color: #304d47; font-size: 15px; font-weight: 700; }
+.guess-row { display: flex; gap: 10px; }
+input { min-width: 0; flex: 1; height: 56px; padding: 0 16px; border: 1px solid #bba77d; border-radius: 14px; outline: none; background: #fffdf6; color: #113c38; font-size: 20px; letter-spacing: .22em; text-align: center; }
+input:focus { border-color: #0f5b53; box-shadow: 0 0 0 3px #b7d9d0; }
+button { min-height: 56px; border: 0; border-radius: 14px; padding: 0 19px; background: #0f5149; color: #fff8e8; font-weight: 800; cursor: pointer; box-shadow: 0 5px 0 #08342f; }
+button:active { transform: translateY(3px); box-shadow: 0 2px 0 #08342f; }
+button:disabled, input:disabled { cursor: not-allowed; opacity: .55; }
+.notice { padding: 13px 15px; border-radius: 14px; background: #f6e4c4; color: #734a20; font: 14px/1.5 ui-sans-serif, system-ui; }
+.next { width: 100%; background: #a54635; box-shadow: 0 5px 0 #763025; }
+footer { margin-top: auto; color: #607670; text-align: center; font: 12px/1.55 ui-sans-serif, system-ui; }
+@media (max-width: 390px) { .game-shell { padding-inline: 14px; } .hint { font-size: 48px; } button { padding-inline: 14px; } }
