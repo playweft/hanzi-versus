@@ -95,13 +95,18 @@ async function askAi(answer, hints, guesses, round) {
     "请给出一个与答案语义相关、但不包含答案任何汉字的两字中文词语或词组。",
     "不要解释，不要标点，不要引号；只输出恰好两个汉字。",
   ].join("\n");
+  const debugAi = context?.mode === "solo";
+  if (debugAi) console.info("[Hanzi Versus] AI prompt", { prompt, round });
   if (!port) return pickFallback(answer, round);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const reply = clean(await rpc("languageModel.prompt", { input: prompt, options: { maxOutputTokens: 24 } }));
+      const rawReply = await rpc("languageModel.prompt", { input: prompt, options: { maxOutputTokens: 24 } });
+      if (debugAi) console.info("[Hanzi Versus] AI response", rawReply);
+      const reply = clean(rawReply);
       const candidate = [...reply.matchAll(/[\u3400-\u9fff]{2}/gu)].map((match) => match[0]).find((value) => isValidHint(value, answer));
       if (candidate) return candidate;
     } catch (error) {
+      if (debugAi) console.error("[Hanzi Versus] AI request failed", error);
       if (attempt === 1) showNotice(`AI 提示不可用，已使用本地线索。${error.message}`);
     }
   }
