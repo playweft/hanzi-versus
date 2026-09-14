@@ -1,4 +1,4 @@
-# Hanzi Versus / 诗词对决
+# Hanzi Versus / 汉字对决
 
 一个可运行在 Playweft 的成语猜谜游戏。玩家根据 AI 生成的二字提示，抢答隐藏的四字成语。
 
