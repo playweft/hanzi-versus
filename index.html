@@ -3,47 +3,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#123d3b" />
+    <meta name="theme-color" content="#f7f5ef" />
     <title>诗词对决</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="game-shell">
-      <header>
-        <p class="eyebrow">HANZI VERSUS</p>
-        <h1>诗词对决</h1>
-        <p id="mode-label" class="mode-label">单人模式</p>
-      </header>
-
-      <section class="round-card" aria-live="polite">
-        <div class="round-topline">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">HANZI VERSUS</p>
+          <h1>猜成语</h1>
+        </div>
+        <div class="game-meta" aria-label="游戏进度">
+          <span id="mode-label">单人模式</span>
+          <span class="meta-divider" aria-hidden="true"></span>
           <span id="round-label">第 1 / 6 轮</span>
           <span id="timer" class="timer">--:--</span>
         </div>
-        <p id="status" class="status">正在准备第一条提示…</p>
-        <div id="hint" class="hint" aria-label="AI 提示">？</div>
-        <p class="hint-caption">AI 二字提示</p>
-      </section>
+      </header>
 
-      <section class="history-card">
-        <p class="section-title">已获得的提示</p>
-        <div id="history" class="history" aria-live="polite"></div>
-      </section>
+      <p id="status" class="status" aria-live="polite">正在准备第一条提示…</p>
 
-      <form id="guess-form" class="guess-form">
-        <label for="guess">猜一个四字成语</label>
-        <div class="guess-row">
-          <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="输入四个汉字" />
-          <button id="submit" type="submit">提交</button>
+      <section class="content-card hint-card" aria-labelledby="hint-title">
+        <div class="card-heading">
+          <span class="heading-icon hint-icon" aria-hidden="true">💡</span>
+          <div>
+            <h2 id="hint-title">提示词语</h2>
+            <p>这些词语与成语有关：</p>
+          </div>
         </div>
-      </form>
+        <div id="history" class="hint-grid" aria-live="polite">
+          <span id="hint" class="hint-tile current" aria-label="当前 AI 提示">？</span>
+        </div>
+
+        <form id="guess-form" class="guess-form">
+          <label class="sr-only" for="guess">输入四字成语</label>
+          <div class="guess-row">
+            <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="请输入你的猜测..." aria-label="请输入你的猜测" />
+            <button id="submit" type="submit">提交</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="content-card wrong-card" aria-labelledby="wrong-title">
+        <div class="card-heading">
+          <span class="heading-icon wrong-icon" aria-hidden="true">×</span>
+          <div>
+            <h2 id="wrong-title">错误猜测</h2>
+            <p>你之前猜过的成语：</p>
+          </div>
+        </div>
+        <div id="wrong-guesses" class="wrong-list" aria-live="polite">
+          <span class="empty-state">还没有错误猜测</span>
+        </div>
+      </section>
 
       <section id="notice" class="notice" hidden></section>
       <button id="next" class="next" type="button" hidden>下一题</button>
 
-      <footer>
-        <span>先错者会给对手留下 0.8 秒竞态窗口；未竞态提交时，对手获得 8 秒延时猜测。</span>
-      </footer>
+      <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
     </main>
     <script type="module" src="./app.js"></script>
   </body>
