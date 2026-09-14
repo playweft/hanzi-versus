@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="game-shell">
+    <section id="start-screen" class="start-screen" aria-labelledby="start-title">
+      <img class="start-icon" src="./icon.svg" alt="" width="96" height="96" />
+      <p class="eyebrow">HANZI VERSUS</p>
+      <h1 id="start-title">汉字对决</h1>
+      <p class="start-description">看二字提示，猜四字成语。<br />最多六条线索，看看你能多快猜中。</p>
+      <button id="start" type="button" disabled>正在连接…</button>
+      <p id="start-status" class="start-status" aria-live="polite">准备好后，点击开始游戏。</p>
+    </section>
+    <main id="game" class="game-shell" hidden>
       <header class="game-header">
         <div>
           <p class="eyebrow">HANZI VERSUS</p>
@@ -22,7 +30,7 @@
         </div>
       </header>
 
-      <p id="status" class="status" aria-live="polite">正在准备第一条提示…</p>
+      <p id="status" class="status" aria-live="polite">准备开始…</p>
 
       <section class="content-card hint-card" aria-labelledby="hint-title">
         <div class="card-heading">

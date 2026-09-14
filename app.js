@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const ui = {
+  startScreen: $("#start-screen"), start: $("#start"), startStatus: $("#start-status"), game: $("#game"),
   mode: $("#mode-label"), round: $("#round-label"), timer: $("#timer"),
   status: $("#status"), hint: $("#hint"), history: $("#history"), wrongGuesses: $("#wrong-guesses"),
   form: $("#guess-form"), input: $("#guess"), submit: $("#submit"),
@@ -17,6 +18,7 @@ let clockOffset = 0;
 let timerHandle;
 let generationKey;
 let solo;
+let started = false;
 const pending = new Map();
 
 function announceReady() {
@@ -62,7 +64,19 @@ function onMessage(event) {
 async function startPlayweft(initialContext) {
   context = initialContext;
   ui.mode.textContent = context.mode === "room" ? "双人对战" : "单人模式";
-  if (context.mode === "solo") startSolo();
+  updateStartScreen();
+  if (started && context.mode === "room") {
+    renderRoom();
+    maybeRunRoomAutomation();
+  }
+}
+
+function updateStartScreen() {
+  ui.start.disabled = !context;
+  ui.start.textContent = "开始游戏";
+  ui.startStatus.textContent = context?.mode === "room"
+    ? "双人对战 · 进入后由房主开始出题。"
+    : "准备好后，点击开始游戏。";
 }
 
 async function loadIdioms() {
@@ -152,6 +166,7 @@ function nowServer() { return Date.now() + clockOffset; }
 function applyRoomState(update) {
   roomState = update.state;
   clockOffset = Number(update.serverTime ?? Date.now()) - Date.now();
+  if (!started || !context) return;
   renderRoom();
   maybeRunRoomAutomation();
 }
@@ -200,7 +215,7 @@ function renderTimer(deadline) {
 
 async function maybeRunRoomAutomation() {
   const state = roomState;
-  if (!state) return;
+  if (!started || !context || !state) return;
   if (state.phase === "awaiting_answer" && context.playerId === state.hostId) {
     const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
     if (pool.length) await roomAction({ type: "start_game", answer: pool[Math.floor(Math.random() * pool.length)] });
@@ -283,5 +298,32 @@ ui.next.addEventListener("click", async () => {
   await startSolo(); ui.next.hidden = true; ui.input.disabled = false; ui.submit.disabled = false;
 });
 
-// Allows the page to remain usable as a static preview outside Playweft.
-window.setTimeout(() => { if (!context) { context = { mode: "solo" }; startSolo(); } }, 900);
+ui.start.addEventListener("click", async () => {
+  if (started || !context) return;
+  started = true;
+  ui.start.disabled = true;
+  ui.startScreen.hidden = true;
+  ui.game.hidden = false;
+  ui.input.disabled = true;
+  ui.submit.disabled = true;
+  if (context.mode === "room") {
+    ui.status.textContent = "等待房间同步…";
+    renderRoom();
+    await maybeRunRoomAutomation();
+  } else {
+    await startSolo();
+    if (!solo) {
+      started = false;
+      ui.game.hidden = true;
+      ui.startScreen.hidden = false;
+      updateStartScreen();
+      ui.startStatus.textContent = "题库加载失败，请点击开始重试。";
+    }
+  }
+});
+
+// Static previews can start locally; embedded games wait for their bridge.
+if (window.parent === window) {
+  context = { mode: "solo" };
+  updateStartScreen();
+}

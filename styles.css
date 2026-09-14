@@ -44,3 +44,12 @@ footer { margin-top: auto; padding-top: 2px; color: #adb0aa; text-align: center;
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @keyframes hint-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 @media (max-width: 390px) { .game-shell { padding: 20px 10px 16px; } .hint-card, .wrong-card { padding-inline: 16px; } .hint-grid { gap: 9px; } .hint-tile { min-height: 60px; font-size: 19px; } .game-meta { gap: 5px; } }
+
+[hidden] { display: none !important; }
+.start-screen { min-height: 100svh; max-width: 560px; margin: auto; padding: 48px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.start-icon { margin-bottom: 28px; }
+.start-screen h1 { font-size: 38px; }
+.start-description { margin: 20px 0 32px; color: #7c827a; font-size: 16px; line-height: 1.9; }
+.start-screen button { width: min(100%, 280px); }
+.start-status { color: #90958d; font-size: 13px; line-height: 1.6; }
+button:focus-visible { outline: 3px solid #123d3b; outline-offset: 4px; }
