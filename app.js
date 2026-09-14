@@ -108,7 +108,7 @@ async function askAi(answer, hints, guesses, round) {
   if (!port) return pickFallback(answer, round);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const rawReply = await rpc("languageModel.prompt", { input: prompt, options: { maxOutputTokens: 128 } });
+      const rawReply = await rpc("languageModel.prompt", { input: prompt });
       if (debugAi) console.info("[Hanzi Versus] AI response", rawReply);
       const reply = clean(rawReply);
       const candidate = extractHint(reply, answer);
