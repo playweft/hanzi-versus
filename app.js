@@ -82,6 +82,14 @@ function pickFallback(answer, round) {
   const offset = [...answer].reduce((sum, character) => sum + character.codePointAt(0), 0);
   return FALLBACK_HINTS[(offset + round - 1) % FALLBACK_HINTS.length];
 }
+function extractHint(reply, answer) {
+  const labeled = [...reply.matchAll(/(?:最终提示|提示)\s*[：:]\s*([\u3400-\u9fff]{2})/gu)]
+    .map((match) => match[1]);
+  const candidates = labeled.length
+    ? labeled
+    : [...reply.matchAll(/[\u3400-\u9fff]{2}/gu)].map((match) => match[0]);
+  return candidates.reverse().find((value) => isValidHint(value, answer));
+}
 
 async function askAi(answer, hints, guesses, round) {
   const transcript = guesses.length
@@ -92,18 +100,18 @@ async function askAi(answer, hints, guesses, round) {
     `答案成语：${answer}。`,
     `已有提示：${hints.join("、") || "无"}。`,
     `此前双方猜测：${transcript}。`,
-    "请给出一个与答案语义相关、但不包含答案任何汉字的两字中文词语或词组。",
-    "不要解释，不要标点，不要引号；只输出恰好两个汉字。",
+    "先在心中分析成语的含义、禁用的四个答案字，并拟定至少三个不含禁用字的二字候选提示；选择语义最贴切的一个。",
+    "然后严格用两行输出：第一行“分析：”后写简短分析；第二行必须是“最终提示：XX”，其中 XX 恰好两个汉字、不含答案中的任何字。",
   ].join("\n");
   const debugAi = context?.mode === "solo";
   if (debugAi) console.info("[Hanzi Versus] AI prompt", { prompt, round });
   if (!port) return pickFallback(answer, round);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const rawReply = await rpc("languageModel.prompt", { input: prompt, options: { maxOutputTokens: 24 } });
+      const rawReply = await rpc("languageModel.prompt", { input: prompt, options: { maxOutputTokens: 128 } });
       if (debugAi) console.info("[Hanzi Versus] AI response", rawReply);
       const reply = clean(rawReply);
-      const candidate = [...reply.matchAll(/[\u3400-\u9fff]{2}/gu)].map((match) => match[0]).find((value) => isValidHint(value, answer));
+      const candidate = extractHint(reply, answer);
       if (candidate) return candidate;
     } catch (error) {
       if (debugAi) console.error("[Hanzi Versus] AI request failed", error);
