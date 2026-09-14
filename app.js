@@ -97,13 +97,13 @@ async function askAi(answer, hints, guesses, round) {
     `答案成语：${answer}。`,
     `已有提示：${hints.join("、") || "无"}。`,
     `此前双方猜测：${transcript}。`,
-    "先充分分析成语含义、禁用字与候选提示，再选择语义最贴切者。",
+    "先分析成语含义、禁用字与候选提示，再选择语义最贴切者。",
     "最后必须另起一行输出“最终提示：XX”，其中 XX 恰好两个汉字、不含答案中的任何字。",
   ].join("\n");
   const compactRetryPrompt = [
     `答案成语：${answer}。禁用答案中的任何汉字。`,
     "上一轮回答没有完成最终提示。请用极简思考后立刻完成输出。",
-    "只输出两行：分析：不超过20字；最终提示：XX。XX 必须恰好两个汉字，且与答案无重字。",
+    "只输出两行：分析：不超过100字；最终提示：XX。XX 必须恰好两个汉字，且与答案无重字。",
   ].join("\n");
   const debugAi = context?.mode === "solo";
   if (debugAi) console.info("[Hanzi Versus] AI prompt", { prompt, round });
