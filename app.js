@@ -1,7 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   mode: $("#mode-label"), round: $("#round-label"), timer: $("#timer"),
-  status: $("#status"), hint: $("#hint"), history: $("#history"),
+  status: $("#status"), hint: $("#hint"), history: $("#history"), wrongGuesses: $("#wrong-guesses"),
   form: $("#guess-form"), input: $("#guess"), submit: $("#submit"),
   notice: $("#notice"), next: $("#next"),
 };
@@ -130,7 +130,21 @@ function setNotice(message) {
 function showNotice(message) { setNotice(message); window.setTimeout(() => setNotice(""), 4800); }
 function setHistory(hints) {
   ui.history.replaceChildren(...hints.map((hint, index) => {
-    const el = document.createElement("span"); el.textContent = `${index + 1}. ${hint}`; return el;
+    const el = document.createElement("span");
+    el.className = `hint-tile${index === hints.length - 1 ? " current" : ""}`;
+    el.textContent = hint;
+    if (index === hints.length - 1) el.id = "hint";
+    return el;
+  }));
+  ui.hint = $("#hint");
+}
+function setWrongGuesses(guesses) {
+  if (!guesses.length) {
+    const empty = document.createElement("span"); empty.className = "empty-state"; empty.textContent = "还没有错误猜测";
+    ui.wrongGuesses.replaceChildren(empty); return;
+  }
+  ui.wrongGuesses.replaceChildren(...guesses.map(({ guess }) => {
+    const el = document.createElement("span"); el.className = "wrong-chip"; el.textContent = guess; return el;
   }));
 }
 function nowServer() { return Date.now() + clockOffset; }
@@ -150,8 +164,9 @@ function renderRoom() {
   const state = roomState;
   if (!state) return;
   ui.round.textContent = state.round ? `第 ${state.round} / 6 轮` : "准备中";
-  ui.hint.textContent = state.currentHint || "？";
   setHistory(state.hints || []);
+  if (!(state.hints || []).length) setHistory([state.currentHint || "？"]);
+  setWrongGuesses((state.guesses || []).filter((item) => item.player === context.playerId && item.guess !== state.revealedAnswer));
   ui.next.hidden = !(context.playerId === state.hostId && ["solved", "need_new_answer"].includes(state.phase));
   ui.next.textContent = state.phase === "solved" ? "下一题" : "换一个成语";
   const canGuess = ["guessing", "race_window", "last_chance"].includes(state.phase)
@@ -220,6 +235,7 @@ async function startSolo() {
   const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
   if (!pool.length) return;
   solo = { answer: pool[Math.floor(Math.random() * pool.length)], hints: [], guesses: [], round: 0, solved: false };
+  setHistory(["？"]); setWrongGuesses([]);
   await nextSoloHint();
 }
 
@@ -236,7 +252,7 @@ async function nextSoloHint() {
   ui.input.disabled = true; ui.submit.disabled = true;
   const hint = await askAi(solo.answer, solo.hints, solo.guesses, solo.round);
   solo.hints.push(hint);
-  ui.hint.textContent = hint; setHistory(solo.hints);
+  setHistory(solo.hints);
   ui.status.textContent = "输入一个四字成语来猜测。";
   ui.input.disabled = false; ui.submit.disabled = false; ui.input.focus();
 }
@@ -253,6 +269,7 @@ ui.form.addEventListener("submit", async (event) => {
     solo.solved = true; ui.status.textContent = `答对了！答案就是：${solo.answer}`;
     ui.next.hidden = false; ui.next.textContent = "下一题"; ui.input.disabled = true; ui.submit.disabled = true; return;
   }
+  setWrongGuesses(solo.guesses);
   showNotice("没有猜中，AI 会给出下一条提示。");
   await nextSoloHint();
 });
