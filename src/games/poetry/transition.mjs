@@ -43,8 +43,10 @@ export function animatePoetryCompletion(before, moveLetters, commit, onFinish) {
     if(!reduced && before) {
       const easing='cubic-bezier(.22, 1, .36, 1)';
       const dy=before.rect.top-after.top;
-      settling.push(play(card,[{height:`${before.rect.height}px`,transform:`translateY(${dy}px)`},
-        {height:`${after.height}px`,transform:'translateY(0)'}],{easing}));
+      const marginTop=parseFloat(getComputedStyle(card).marginTop);
+      // Animate layout spacing with height so the following button moves with the card.
+      settling.push(play(card,[{height:`${before.rect.height}px`,marginTop:`${marginTop+dy}px`},
+        {height:`${after.height}px`,marginTop:`${marginTop}px`}],{easing}));
       if(moveLetters) before.letters.forEach((letter,i)=>{
         const to=targets[i];
         settling.push(play(letter.el,[{transform:`translate(${letter.rect.left-to.left}px,${letter.rect.top-to.top-dy}px)`},

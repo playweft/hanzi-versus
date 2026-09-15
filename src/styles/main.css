@@ -387,6 +387,8 @@ button:focus-visible {
 }
 .poetry-card {
   padding: 20px 18px 18px;
+  border-radius: 20px;
+  background: #fff;
 }
 .poetry-slots {
   display: grid;
@@ -546,9 +548,6 @@ button:focus-visible {
   margin: 0 5px;
   line-height: 1.7;
 }
-#poetry-game .poetry-card {
-  box-shadow: none;
-}
 #poetry-game .poetry-actions > button {
   box-shadow: none;
   transform: none;
@@ -577,10 +576,6 @@ button:focus-visible {
 #poetry-game.is-solved .poetry-card {
   margin-top: clamp(24px, 6svh, 64px);
   padding: 28px 18px 20px;
-  background: #fff;
-  border: 0;
-  border-radius: 20px;
-  backdrop-filter: none;
 }
 #poetry-game.is-solved .card-heading {
   justify-content: center;
