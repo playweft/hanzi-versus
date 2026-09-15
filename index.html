@@ -25,9 +25,10 @@
 
   <main id="game" class="game-shell" hidden>
     <header class="game-header">
-      <div>
-        <h1>成语寻踪</h1>
-      </div>
+      <button class="back-button" type="button" aria-label="返回首页" title="返回首页" onclick="location.reload()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </button>
+      <h1>成语寻踪</h1>
       <div class="game-meta" aria-label="游戏进度">
         <span id="mode-label">单人模式</span>
         <span class="meta-divider" aria-hidden="true"></span>
@@ -81,9 +82,10 @@
 
   <main id="poetry-game" class="game-shell" hidden>
     <header class="game-header">
-      <div>
-        <h1>拾字成诗</h1>
-      </div><button class="quiet-button" onclick="location.reload()">返回首页</button>
+      <button class="back-button" type="button" aria-label="返回首页" title="返回首页" onclick="location.reload()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </button>
+      <h1>拾字成诗</h1>
     </header>
     <p id="poetry-round" class="eyebrow"></p>
     <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
