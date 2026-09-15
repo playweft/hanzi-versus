@@ -22,7 +22,7 @@ function countsOf(chars) {
 }
 // Search all useful extra-character multisets (at most five extra tiles).
 // Maximize total source coverage, then prefer missing characters in the last three positions.
-export function chooseExtras(answer, lines, count, random = Math.random) {
+export function chooseExtras(answer, lines, count, random = Math.random, pad = true) {
   const base = countsOf(answer);
   const targets = lines.map(countsOf);
   if (lines.some(line => overlap(answer, line) === line.length)) return null;
@@ -66,6 +66,7 @@ export function chooseExtras(answer, lines, count, random = Math.random) {
   }
   visit(0);
   if (!best) return null;
+  if (!pad) return best;
   // Once maximum useful coverage is reached, fill remaining slots safely.
   // Repeated/common characters here are padding, not mistaken for added coverage.
   const alphabet = [...new Set([...answer, ...lines.join('')])];
@@ -77,6 +78,29 @@ export function chooseExtras(answer, lines, count, random = Math.random) {
     best.push(safe[0]);
   }
   return best;
+}
+// Try another source before spending leftover slots on zero-coverage padding.
+export function selectDistractors(answer, candidates, count, random = Math.random) {
+  const first = candidates[0];
+  if (!first) throw new Error('没有足够的干扰诗句');
+  let sources = candidates.slice(0, random() < .5 ? 1 : 2);
+  let useful = chooseExtras(answer, sources.map(s => s.line), count, random, false);
+  if (!useful) throw new Error('无法生成干扰字');
+  if (useful.length < count) {
+    // Candidates are ordered by overlap; preserve the strongest source and
+    // prefer the first pair that can use every extra slot meaningfully.
+    for (const candidate of candidates.slice(1)) {
+      if (candidate.line === first.line || candidate.poem?.id === first.poem?.id) continue;
+      const pair = [first, candidate];
+      const trial = chooseExtras(answer, pair.map(s => s.line), count, random, false);
+      if (trial && trial.length > useful.length) { sources = pair; useful = trial; }
+      if (useful.length === count) break;
+    }
+  }
+  const extras = useful.length === count ? useful
+    : chooseExtras(answer, sources.map(s => s.line), count, random);
+  if (!extras) throw new Error('无法生成不完整覆盖干扰诗句的字块');
+  return { sources, extras };
 }
 export const TIER_WEIGHTS = { basic: 45, normal: 45, advanced: 10 };
 export function pickPoem(poems, random = Math.random, previousId) {
@@ -102,9 +126,7 @@ export function makeQuestion(poems, random = Math.random, previousId) {
     return { poem: p, line: lines[0], score: overlap(answer, lines[0] || '') };
   }).filter(p => p.line).sort((a, b) => b.score - a.score);
   if (!candidates.length) throw new Error('没有足够的干扰诗句');
-  const sources = candidates.slice(0, random() < .5 ? 1 : 2);
-  const extras = chooseExtras(answer, sources.map(source => source.line), extraCount, random);
-  if (!extras) throw new Error('无法生成不完整覆盖干扰诗句的字块');
+  const { sources, extras } = selectDistractors(answer, candidates, extraCount, random);
   return { poemId: poem.id, tier: poem.tier || 'basic', answer, title: poem.title, author: poem.author,
     tiles: shuffle([...answer, ...extras], random),
     sources: sources.map(s => ({ title: s.poem.title, author: s.poem.author, line: s.line })) };

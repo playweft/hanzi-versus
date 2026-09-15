@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { makeQuestion, pickPoem, overlap, chooseExtras, validAnswers } from '../poetry-engine.mjs';
+import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers } from '../poetry-engine.mjs';
 const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 let seed=42;
 const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
@@ -65,4 +65,23 @@ test('all lines are distinct and restored versions match familiar text',()=>{
  assert.ok(poems.every(p=>['basic','normal','advanced'].includes(p.tier)));
  const only=poems.filter(p=>p.tier==='normal');
  assert.equal(pickPoem(only,random).tier,'normal');
+});
+
+test('leftover slots recruit a second source instead of duplicate padding',()=>{
+ const answer='不知转入此中来';
+ const candidates=[{poem:{id:'one'},line:'闺中少妇不知愁'}, {poem:{id:'two'},line:'此夜曲中闻折柳'}];
+ const {sources,extras}=selectDistractors(answer,candidates,5,()=>.1);
+ assert.equal(sources.length,2);assert.equal(extras.length,5);
+ assert.ok(!extras.includes('中') && !extras.includes('转'));
+ const board=[...answer,...extras];
+ for(const source of sources) assert.ok(overlap(source.line,board)<7);
+ // Every added tile increases joint coverage: removing any one lowers it.
+ const score=tiles=>sources.reduce((n,s)=>n+overlap(s.line,tiles),0);
+ extras.forEach((_,i)=>assert.ok(score([...answer,...extras.filter((_,j)=>j!==i)])<score(board)));
+});
+test('fully constrained sources still pad safely to the exact size',()=>{
+ const answer='甲乙丙丁戊';
+ const {sources,extras}=selectDistractors(answer,[{poem:{id:'one'},line:'甲乙丙丁己'}],4,random);
+ assert.equal(extras.length,4);assert.ok(!extras.includes('己'));
+ assert.equal(overlap(sources[0].line,[...answer,...extras]),4);
 });
