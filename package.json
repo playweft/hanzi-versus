@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/poetry.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
     "vite": "^7.0.0"

@@ -1,8 +1,10 @@
+import { HAN_4, clean, loadIdioms } from "./games/idiom/engine.mjs";
+import { generateIdiomHint } from "./games/idiom/hints.mjs";
 import {
   startPoetry,
   createPoetryQuestion,
   renderPoetryRoom,
-} from "./poetry-ui.js";
+} from "./games/poetry/ui.js";
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   startScreen: $("#start-screen"),
@@ -23,16 +25,14 @@ const ui = {
   next: $("#next"),
 };
 
-const HAN_2 = /^[\u3400-\u9fff]{2}$/u;
-const HAN_4 = /^[\u3400-\u9fff]{4}$/u;
-const FALLBACK_HINTS = ["意境", "典故", "情状", "修辞", "故事", "哲理"];
-let idioms = [];
 let port;
 let context;
 let roomState;
 let clockOffset = 0;
 let timerHandle;
 let generationKey;
+let hintFailure = null,
+  soloHintBusy = false;
 let solo;
 let started = false;
 let activeMode = "idiom";
@@ -129,79 +129,11 @@ function updateStartScreen() {
             : "点击玩法，即可开始。";
 }
 
-async function loadIdioms() {
-  if (idioms.length) return idioms;
-  const response = await fetch("./data/idioms_top4500.txt");
-  if (!response.ok) throw new Error("题库加载失败");
-  idioms = (await response.text())
-    .split(/\r?\n/)
-    .map((line) => line.split("\t")[0])
-    .filter((word) => HAN_4.test(word));
-  if (!idioms.length) throw new Error("题库为空");
-  return idioms;
-}
-
-function clean(value) {
-  return String(value ?? "")
-    .trim()
-    .replace(/\s/g, "");
-}
-function isValidHint(hint, answer) {
-  return (
-    HAN_2.test(hint) &&
-    [...hint].every((character) => ![...answer].includes(character))
-  );
-}
-function pickFallback(answer, round) {
-  const offset = [...answer].reduce(
-    (sum, character) => sum + character.codePointAt(0),
-    0,
-  );
-  return FALLBACK_HINTS[(offset + round - 1) % FALLBACK_HINTS.length];
-}
-function extractHint(reply, answer) {
-  const labeled = [
-    ...reply.matchAll(/(?:最终提示|提示)\s*[：:]\s*([\u3400-\u9fff]{2})/gu),
-  ].map((match) => match[1]);
-  return labeled.reverse().find((value) => isValidHint(value, answer));
-}
-
-async function askAi(answer, hints, guesses, round) {
-  const transcript = guesses.length
-    ? guesses.map((item) => `第${item.round}轮猜测：${item.guess}`).join("；")
-    : "无";
-  const prompt = [
-    "你是中文成语游戏的线索设计师。",
-    `答案成语：${answer}。`,
-    `已有提示：${hints.join("、") || "无"}。`,
-    `此前双方猜测：${transcript}。`,
-    "先分析成语含义、禁用字与候选提示，再选择语义最贴切者。",
-    "最后必须另起一行输出“最终提示：XX”，其中 XX 恰好两个汉字、不含答案中的任何字。",
-  ].join("\n");
-  const compactRetryPrompt = [
-    `答案成语：${answer}。禁用答案中的任何汉字。`,
-    "上一轮回答没有完成最终提示。请用极简思考后立刻完成输出。",
-    "只输出两行：分析：不超过100字；最终提示：XX。XX 必须恰好两个汉字，且与答案无重字。",
-  ].join("\n");
-  const debugAi = context?.mode === "solo";
-  if (debugAi) console.info("[Hanzi Versus] AI prompt", { prompt, round });
-  if (!port) return pickFallback(answer, round);
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      const rawReply = await rpc("languageModel.prompt", {
-        input: attempt === 0 ? prompt : compactRetryPrompt,
-      });
-      if (debugAi) console.info("[Hanzi Versus] AI response", rawReply);
-      const reply = clean(rawReply);
-      const candidate = extractHint(reply, answer);
-      if (candidate) return candidate;
-    } catch (error) {
-      if (debugAi) console.error("[Hanzi Versus] AI request failed", error);
-      if (attempt === 1)
-        showNotice(`AI 提示不可用，已使用本地线索。${error.message}`);
-    }
-  }
-  return pickFallback(answer, round);
+function askAi(answer, hints, guesses, round) {
+  return generateIdiomHint(answer, hints, guesses, round, {
+    request: port ? (payload) => rpc("languageModel.prompt", payload) : null,
+    debug: context?.mode === "solo",
+  });
 }
 
 function setNotice(message) {
@@ -324,7 +256,17 @@ function renderRoom() {
     need_new_answer: `六条提示仍未猜出，答案是：${state.revealedAnswer}。`,
   };
   ui.status.textContent = statuses[state.phase] || "同步中…";
-  renderTimer(state.deadlineAt || state.raceDeadlineAt);
+  const failed =
+    state.phase === "generating" &&
+    hintFailure?.key ===
+      `${state.round}:${state.hints.length}:${state.answerForHint}`;
+  $("#retry-hint").hidden = !failed;
+  if (failed) ui.status.textContent = hintFailure.message;
+  renderTimer(
+    state.phase === "generating"
+      ? null
+      : state.deadlineAt || state.raceDeadlineAt,
+  );
 }
 
 function renderTimer(deadline) {
@@ -371,14 +313,27 @@ async function maybeRunRoomAutomation() {
     const key = `${state.round}:${state.hints.length}:${state.answerForHint}`;
     if (generationKey === key) return;
     generationKey = key;
-    const hint = await askAi(
-      state.answerForHint,
-      state.hints,
-      state.guesses,
-      state.round,
-    );
-    if (roomState?.phase === "generating")
-      await roomAction({ type: "set_hint", hint });
+    hintFailure = null;
+    $("#retry-hint").hidden = true;
+    try {
+      const hint = await askAi(
+        state.answerForHint,
+        state.hints,
+        state.guesses,
+        state.round,
+      );
+      if (
+        roomState?.phase === "generating" &&
+        `${roomState.round}:${roomState.hints.length}:${roomState.answerForHint}` ===
+          key
+      )
+        await roomAction({ type: "set_hint", hint });
+    } catch (error) {
+      if (roomState?.phase === "generating" && generationKey === key) {
+        hintFailure = { key, message: error.message };
+        renderRoom();
+      }
+    }
     return;
   }
   if (state.phase === "race_window") {
@@ -419,13 +374,14 @@ async function startSolo() {
     round: 0,
     solved: false,
   };
+  ui.round.textContent = "准备中";
   setHistory(["？"]);
   setWrongGuesses([]);
   await nextSoloHint();
 }
 
 async function nextSoloHint() {
-  if (!solo) return;
+  if (!solo || soloHintBusy) return;
   if (solo.round >= 6) {
     solo.solved = true;
     ui.status.textContent = `六条提示仍未猜出，答案是：${solo.answer}`;
@@ -433,18 +389,37 @@ async function nextSoloHint() {
     ui.next.textContent = "下一题";
     return;
   }
-  solo.round += 1;
-  ui.round.textContent = `第 ${solo.round} / 6 轮`;
+  soloHintBusy = true;
+  $("#retry-hint").hidden = true;
   ui.status.textContent = "AI 正在生成二字提示…";
   ui.input.disabled = true;
   ui.submit.disabled = true;
-  const hint = await askAi(solo.answer, solo.hints, solo.guesses, solo.round);
-  solo.hints.push(hint);
-  setHistory(solo.hints);
-  ui.status.textContent = "输入一个四字成语来猜测。";
-  ui.input.disabled = false;
-  ui.submit.disabled = false;
-  ui.input.focus();
+  renderTimer(null);
+  const current = solo;
+  try {
+    const hint = await askAi(
+      current.answer,
+      current.hints,
+      current.guesses,
+      current.round + 1,
+    );
+    if (solo !== current) return;
+    current.round += 1;
+    current.hints.push(hint);
+    ui.round.textContent = `第 ${current.round} / 6 轮`;
+    setHistory(current.hints);
+    ui.status.textContent = "输入一个四字成语来猜测。";
+    ui.input.disabled = false;
+    ui.submit.disabled = false;
+    ui.input.focus();
+  } catch (error) {
+    if (solo === current) {
+      ui.status.textContent = error.message;
+      $("#retry-hint").hidden = false;
+    }
+  } finally {
+    soloHintBusy = false;
+  }
 }
 
 ui.form.addEventListener("submit", async (event) => {
@@ -453,7 +428,7 @@ ui.form.addEventListener("submit", async (event) => {
   if (!HAN_4.test(guess)) return showNotice("请输入恰好四个汉字的成语。");
   ui.input.value = "";
   if (context?.mode === "room") return roomAction({ type: "guess", guess });
-  if (!solo || solo.solved) return;
+  if (!solo || solo.solved || soloHintBusy || ui.submit.disabled) return;
   solo.guesses.push({ round: solo.round, guess });
   if (guess === solo.answer) {
     solo.solved = true;
@@ -482,10 +457,8 @@ ui.next.addEventListener("click", async () => {
       });
     return;
   }
-  await startSolo();
   ui.next.hidden = true;
-  ui.input.disabled = false;
-  ui.submit.disabled = false;
+  await startSolo();
 });
 
 ui.startButtons.forEach((button) =>
@@ -546,3 +519,18 @@ if (window.parent === window) {
   context = { mode: "solo" };
   updateStartScreen();
 }
+
+$("#retry-hint").onclick = async () => {
+  if (context?.mode === "room") {
+    if (
+      !hintFailure ||
+      context.playerId !== roomState?.hostId ||
+      roomState.phase !== "generating"
+    )
+      return;
+    hintFailure = null;
+    generationKey = null;
+    renderRoom();
+    await maybeRunRoomAutomation();
+  } else await nextSoloHint();
+};

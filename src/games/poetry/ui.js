@@ -1,5 +1,5 @@
-import { capturePoetryCard, animatePoetryCompletion, animatePoetryNext } from './poetry-transition.mjs';
-import { makeQuestion, validAnswers, guessMembership } from './poetry-engine.mjs';
+import { capturePoetryCard, animatePoetryCompletion, animatePoetryNext } from './transition.mjs';
+import { makeQuestion, validAnswers, guessMembership } from './engine.mjs';
 const $ = s => document.querySelector(s);
 let poems, question, selected = [], solved = false, round = 0, room, act, busy = false, feedback = null, reviewing = false, revealed = false;
 export async function loadPoetry() {

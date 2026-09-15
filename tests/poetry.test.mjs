@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors, canDistract, guessMembership } from '../poetry-engine.mjs';
+import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors, canDistract, guessMembership } from '../src/games/poetry/engine.mjs';
 const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 let seed=42;
 const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
