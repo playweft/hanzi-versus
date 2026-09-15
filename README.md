@@ -57,4 +57,4 @@ Playweft v1 的 `languageModel.prompt` 只能由 iframe 发起，Lua 房间状�
 题库默认 K=1000，数据来源、排名公式及已知局限见 `data/poetry-README.md`。历史搜索排名不保证每首都耳熟能详。
 
 重建：安装 `opencc-python-reimplemented` 后运行 `python scripts/build-poetry.py /path/to/chinese-poetry 1000`。
-验证：`npm test`；启动本地开发服务后运行 `npm run test:browser`（需要 Chrome）；安装 Python `lupa` 后运行 `python tests/poetry-room.py` 可验证房间规则。
+验证：`npm test`；安装 Python `lupa` 后运行 `python tests/poetry-room.py` 可验证房间规则。
