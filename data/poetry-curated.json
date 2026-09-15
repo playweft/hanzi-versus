@@ -5228,27 +5228,6 @@
     }
   },
   {
-    "id": "586a0396d290020c",
-    "title": "悯农",
-    "author": "李绅",
-    "kind": "唐诗",
-    "lines": [
-      "秋成万颗子"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "春种一粒粟",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.tang.25000.json",
-      "index": 869,
-      "title": "古风二首 一"
-    }
-  },
-  {
     "id": "05b990e81be2799a",
     "title": "乐游原",
     "author": "李商隐",
@@ -5319,27 +5298,6 @@
     }
   },
   {
-    "id": "947b9a54f6bcbe13",
-    "title": "望天门山",
-    "author": "李白",
-    "kind": "唐诗",
-    "lines": [
-      "碧水东流至北回"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "天门中断楚江开",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.tang.8000.json",
-      "index": 652,
-      "title": "望天门山"
-    }
-  },
-  {
     "id": "86ea84ac56591be1",
     "title": "峨眉山月歌",
     "author": "李白",
@@ -5385,27 +5343,6 @@
       "file": "全唐诗/poet.tang.8000.json",
       "index": 842,
       "title": "春夜洛城闻笛"
-    }
-  },
-  {
-    "id": "594055efd645daf0",
-    "title": "闻王昌龄左迁龙标遥有此寄",
-    "author": "李白",
-    "kind": "唐诗",
-    "lines": [
-      "随风直到夜郎西"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "杨花落尽子规啼",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.tang.8000.json",
-      "index": 358,
-      "title": "闻王昌龄左迁龙标遥有此寄"
     }
   },
   {
@@ -5668,27 +5605,6 @@
       "file": "蒙学/qianjiashi.json",
       "index": "content/2/content/19",
       "title": "寒食"
-    }
-  },
-  {
-    "id": "ab02884c69dcda3d",
-    "title": "望洞庭",
-    "author": "刘禹锡",
-    "kind": "唐诗",
-    "lines": [
-      "遥望洞庭山水翠"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "湖光秋月两相和",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.tang.19000.json",
-      "index": 517,
-      "title": "望洞庭"
     }
   },
   {
@@ -6560,28 +6476,6 @@
     }
   },
   {
-    "id": "17f1c2ccf494ce7f",
-    "title": "泊船瓜洲",
-    "author": "王安石",
-    "kind": "宋诗",
-    "lines": [
-      "钟山祇隔数重山",
-      "春风自绿江南岸"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "京口瓜洲一水间",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.song.32000.json",
-      "index": 720,
-      "title": "泊船瓜洲"
-    }
-  },
-  {
     "id": "e37209e14415e0e0",
     "title": "梅花",
     "author": "王安石",
@@ -6603,27 +6497,6 @@
       "file": "全唐诗/poet.song.32000.json",
       "index": 536,
       "title": "梅花"
-    }
-  },
-  {
-    "id": "947c71839e2075e0",
-    "title": "题西林壁",
-    "author": "苏轼",
-    "kind": "宋诗",
-    "lines": [
-      "远近高低总不同"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "横看成岭侧成峰",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "全唐诗/poet.song.45000.json",
-      "index": 362,
-      "title": "题西林壁"
     }
   },
   {
@@ -6768,27 +6641,6 @@
       "file": "全唐诗/poet.song.184000.json",
       "index": 589,
       "title": "约客"
-    }
-  },
-  {
-    "id": "fe667855ca7d5e5e",
-    "title": "题临安邸",
-    "author": "林升",
-    "kind": "宋诗",
-    "lines": [
-      "暖风薰得游人醉"
-    ],
-    "tier": "advanced",
-    "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
-      "anchor": "山外青山楼外楼",
-      "review": "逐条显式选句并与源文精确核对"
-    },
-    "source": {
-      "file": "蒙学/qianjiashi.json",
-      "index": "content/2/content/70",
-      "title": "题临安邸"
     }
   },
   {

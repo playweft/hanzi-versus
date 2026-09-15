@@ -120,6 +120,18 @@ for poem in result:
 result=[p for p in result if p['lines']]
 for poem in result:
  if any(not re.fullmatch('[\u3400-\u9fff]{5}|[\u3400-\u9fff]{7}',l) for l in poem['lines']): raise ValueError(poem['title'])
+# 课标有的以课标为准：源文与课标只差一字的句子，不得在课标篇目之外另立条目，
+# 否则逐行去重只会剩下那一字之差的残句（如源文“秋成万颗子”对课标“秋收万颗子”）。
+leftovers=[]
+for poem in result:
+ if poem['selection']['mode']=='school-selected-lines': continue
+ for other in result:
+  if other['selection']['mode']!='school-selected-lines' or other['author']!=poem['author']: continue
+  if len(other['lines'])<=len(poem['lines']): continue
+  if all(any(len(a)==len(b) and sum(x!=y for x,y in zip(a,b))==1 for b in other['lines']) for a in poem['lines']):
+   leftovers.append(f"{poem['title']}（{'/'.join(poem['lines'])}）与《{other['title']}》仅差一字"); break
+if leftovers:
+ raise ValueError('课标篇目残留，请在 poetry-selection.txt 中注释掉对应行：'+'；'.join(leftovers))
 summary={tier:{'poems':sum(p['tier']==tier for p in result),'lines':sum(len(p['lines']) for p in result if p['tier']==tier)} for tier in ['basic','normal','advanced']}
 for out in [base/'data',base/'public/data']:
  (out/'poetry-curated.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
