@@ -53,3 +53,20 @@ footer { margin-top: auto; padding-top: 2px; color: #adb0aa; text-align: center;
 .start-screen button { width: min(100%, 280px); }
 .start-status { color: #90958d; font-size: 13px; line-height: 1.6; }
 button:focus-visible { outline: 3px solid #123d3b; outline-offset: 4px; }
+
+.mode-options { border: 0; padding: 0; margin: 0 0 24px; width: min(100%, 340px); display: grid; gap: 12px; text-align: left; }
+.mode-options label { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #d5ded2; border-radius: 14px; cursor: pointer; background: #fff9; }
+.mode-options label:has(:checked) { border-color: #4e7f56; background: #edf4e9; }
+.mode-options input { flex: none; width: 18px; height: 18px; accent-color: #4e7f56; }
+.mode-options strong, .mode-options small { display: block; }
+.mode-options small { margin-top: 6px; color: #7c827a; line-height: 1.5; }
+.poetry-card { padding: 24px 16px; }
+.poetry-slots { display: grid; grid-template-columns: repeat(var(--letters, 5), minmax(0, 1fr)); gap: 5px; margin-bottom: 28px; }
+.poetry-slot { padding: 0; min-width: 0; min-height: 48px; border-radius: 5px; background: #e7eddf; color: #234c39; box-shadow: none; font-family: serif; font-size: 24px; border-bottom: 2px solid #7d9b71; }
+.poetry-slot:disabled { opacity: 1; }
+.poetry-tiles { display: grid; grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.poetry-tile { min-width: 0; height: 64px; padding: 0; background: #fffaf0; color: #363c2b; border: 1px solid #e5dbc6; box-shadow: 0 3px 0 #e5dbc6; font-family: "Songti SC", serif; font-size: 28px; }
+.poetry-tile:disabled { opacity: .3; }
+.poetry-actions { display: flex; gap: 12px; justify-content: space-between; }
+.quiet-button { background: transparent; color: #63775b; box-shadow: none; border: 1px solid #ccd7c7; }
+.poetry-source { min-height: 48px; text-align: center; color: #4e7f56; line-height: 1.8; }

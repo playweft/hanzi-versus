@@ -84,6 +84,69 @@ function on_action(state, action, context)
     return reject("NOT_A_PLAYER", "Spectators cannot play")
   end
 
+  if action.type == "start_poetry" then
+    if context.actor.id ~= state.hostId then return reject("HOST_ONLY", "由房主开始下一题") end
+    local q = action.question
+    if type(q) ~= "table" or type(q.answer) ~= "string" or (#q.answer ~= 15 and #q.answer ~= 21)
+      or type(q.tiles) ~= "table" or type(q.answers) ~= "table" or #q.answers > 2000
+      or type(q.title) ~= "string" or type(q.author) ~= "string" then
+      return reject("INVALID_QUESTION", "诗句题目无效")
+    end
+    local size = #q.answer / 3
+    if #q.tiles ~= (size == 5 and 9 or 12) then return reject("INVALID_TILES", "选字数量无效") end
+    local counts = {}
+    for _, c in ipairs(q.tiles) do
+      if type(c) ~= "string" or #c ~= 3 then return reject("INVALID_TILES", "字块无效") end
+      counts[c] = (counts[c] or 0) + 1
+    end
+    for i = 1, #q.answer, 3 do
+      local c = string.sub(q.answer, i, i + 2)
+      if not counts[c] or counts[c] == 0 then return reject("INVALID_TILES", "字块缺少答案用字") end
+      counts[c] = counts[c] - 1
+    end
+    state.gameType = "poetry"
+    state.round = state.round + 1
+    state.phase = "poetry_guessing"
+    state.poetry = { id = tostring(context.actionAt) .. ":" .. tostring(state.round), tiles = q.tiles, length = size }
+    state.poetryAnswers = q.answers
+    state.answer = q.answer
+    state.poetryTitle = q.title
+    state.poetryAuthor = q.author
+    state.winner = nil
+    state.revealedAnswer = nil
+    state.deadlineAt = nil
+    state.raceDeadlineAt = nil
+    return { accepted = true, state = state, events = {} }
+  end
+  if action.type == "poetry_guess" then
+    if state.gameType ~= "poetry" or state.phase ~= "poetry_guessing" then return reject("WRONG_PHASE", "本题已经结束") end
+    if type(action.guess) ~= "string" or #action.guess ~= state.poetry.length * 3 then return reject("INVALID_GUESS", "请选择完整诗句") end
+    local counts = {}
+    for _, c in ipairs(state.poetry.tiles) do counts[c] = (counts[c] or 0) + 1 end
+    for i = 1, #action.guess, 3 do
+      local c = string.sub(action.guess, i, i + 2)
+      if not counts[c] or counts[c] == 0 then return reject("INVALID_GUESS", "请选择题面中的汉字") end
+      counts[c] = counts[c] - 1
+    end
+    local correct = action.guess == state.answer
+    for _, answer in ipairs(state.poetryAnswers) do
+      if answer.line == action.guess then
+        correct = true
+        state.poetryTitle = answer.title
+        state.poetryAuthor = answer.author
+        break
+      end
+    end
+    if not correct then return reject("TRY_AGAIN", "还没拼对，试着调整字的顺序。") end
+    state.phase = "poetry_solved"
+    state.winner = context.actor.id
+    state.revealedAnswer = action.guess
+    state.poetry.title = state.poetryTitle
+    state.poetry.author = state.poetryAuthor
+    return { accepted = true, state = state, events = {} }
+  end
+  if state.gameType == "poetry" then return reject("WRONG_MODE", "当前为拾字成诗") end
+
   if action.type == "start_game" then
     if context.actor.id ~= state.hostId then
       return reject("HOST_ONLY", "Only the room host may start a new idiom")
@@ -91,6 +154,7 @@ function on_action(state, action, context)
     if type(action.answer) ~= "string" or #action.answer ~= 12 then
       return reject("INVALID_ANSWER", "Answer must be a four-character Chinese idiom")
     end
+    state.gameType = "idiom"
     reset_for_answer(state, action.answer)
     return { accepted = true, state = state, events = { { type = "new_idiom" } } }
   end
@@ -200,6 +264,8 @@ end
 
 function view(state, events, context)
   local visible = {
+    gameType = state.gameType,
+    poetry = state.poetry,
     players = state.players,
     hostId = state.hostId,
     phase = state.phase,

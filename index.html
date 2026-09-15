@@ -12,7 +12,11 @@
       <img class="start-icon" src="./icon.svg" alt="" width="96" height="96" />
       <p class="eyebrow">HANZI VERSUS</p>
       <h1 id="start-title">汉字对决</h1>
-      <p class="start-description">看二字提示，猜四字成语。<br />最多六条线索，看看你能多快猜中。</p>
+      <p class="start-description">一字一句，皆有妙趣。请选择一种玩法。</p>
+      <fieldset class="mode-options"><legend class="sr-only">选择玩法</legend>
+        <label><input type="radio" name="play-mode" value="idiom" checked /><span><strong>成语寻踪</strong><small>循着提示，猜出成语。</small></span></label>
+        <label><input type="radio" name="play-mode" value="poetry" /><span><strong>拾字成诗</strong><small>拾取散字，拼成诗句。九选五 / 十二选七</small></span></label>
+      </fieldset>
       <button id="start" type="button" disabled>正在连接…</button>
       <p id="start-status" class="start-status" aria-live="polite">准备好后，点击开始游戏。</p>
     </section>
@@ -20,7 +24,7 @@
       <header class="game-header">
         <div>
           <p class="eyebrow">HANZI VERSUS</p>
-          <h1>猜成语</h1>
+          <h1>成语寻踪</h1>
         </div>
         <div class="game-meta" aria-label="游戏进度">
           <span id="mode-label">单人模式</span>
@@ -70,6 +74,19 @@
       <button id="next" class="next" type="button" hidden>下一题</button>
 
       <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
+    </main>
+    <main id="poetry-game" class="game-shell" hidden>
+      <header class="game-header"><div><p class="eyebrow">HANZI VERSUS</p><h1>拾字成诗</h1></div><button class="quiet-button" onclick="location.reload()">返回首页</button></header>
+      <p id="poetry-round" class="eyebrow"></p>
+      <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
+      <section class="content-card poetry-card" aria-label="拼出诗句">
+        <div id="poetry-slots" class="poetry-slots"></div>
+        <div id="poetry-tiles" class="poetry-tiles"></div>
+        <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit" disabled>成句</button></div>
+      </section>
+      <p id="poetry-source" class="poetry-source" aria-live="polite"></p>
+      <div class="poetry-actions"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button id="poetry-next">下一题</button></div>
+      <footer>字有来处，诗有余韵。<br />唐诗宋词精选 · 无需 AI 等待</footer>
     </main>
     <script type="module" src="./app.js"></script>
   </body>

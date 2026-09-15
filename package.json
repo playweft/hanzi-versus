@@ -2,6 +2,15 @@
   "name": "hanzi-versus",
   "private": true,
   "version": "0.1.0",
-  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview" },
-  "devDependencies": { "vite": "^7.0.0" }
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/poetry.test.mjs",
+    "test:browser": "node tests/poetry-browser.mjs"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0",
+    "@playwright/test": "^1.63.0"
+  }
 }

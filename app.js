@@ -1,3 +1,4 @@
+import { startPoetry, createPoetryQuestion, renderPoetryRoom } from "./poetry-ui.js";
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   startScreen: $("#start-screen"), start: $("#start"), startStatus: $("#start-status"), game: $("#game"),
@@ -19,6 +20,8 @@ let timerHandle;
 let generationKey;
 let solo;
 let started = false;
+let activeMode = "idiom";
+let poetryStarting = false;
 const pending = new Map();
 
 function announceReady() {
@@ -165,8 +168,26 @@ function nowServer() { return Date.now() + clockOffset; }
 
 function applyRoomState(update) {
   roomState = update.state;
+  if (context?.mode === "room" && context.playerId !== roomState.hostId) {
+    document.querySelectorAll("input[name='play-mode']").forEach(input => { input.disabled = true; });
+    ui.startStatus.textContent = "由房主选择玩法，点击开始加入。";
+  }
   clockOffset = Number(update.serverTime ?? Date.now()) - Date.now();
   if (!started || !context) return;
+  if (roomState.gameType === "poetry") {
+    activeMode = "poetry";
+    ui.game.hidden = true;
+    startPoetry(roomAction);
+    renderPoetryRoom(roomState, context.playerId);
+    return;
+  }
+  if (activeMode === "poetry") {
+    if (!roomState.gameType && context.playerId === roomState.hostId && !poetryStarting) {
+      poetryStarting = true;
+      createPoetryQuestion().then(question => roomAction({type:"start_poetry",question})).catch(error => { $("#poetry-status").textContent = error.message; }).finally(() => { poetryStarting = false; });
+    }
+    return;
+  }
   renderRoom();
   maybeRunRoomAutomation();
 }
@@ -177,7 +198,7 @@ function playerName(id) {
 
 function renderRoom() {
   const state = roomState;
-  if (!state) return;
+  if (!state || activeMode === "poetry") return;
   ui.round.textContent = state.round ? `第 ${state.round} / 6 轮` : "准备中";
   setHistory(state.hints || []);
   if (!(state.hints || []).length) setHistory([state.currentHint || "？"]);
@@ -215,7 +236,7 @@ function renderTimer(deadline) {
 
 async function maybeRunRoomAutomation() {
   const state = roomState;
-  if (!started || !context || !state) return;
+  if (!started || !context || !state || activeMode === "poetry" || state.gameType === "poetry") return;
   if (state.phase === "awaiting_answer" && context.playerId === state.hostId) {
     const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
     if (pool.length) await roomAction({ type: "start_game", answer: pool[Math.floor(Math.random() * pool.length)] });
@@ -242,8 +263,15 @@ async function maybeRunRoomAutomation() {
 async function roomAction(action) {
   try {
     const result = await rpc("room.action", { action });
-    if (result?.accepted === false) showNotice(result.error?.message || "操作未被接受");
-  } catch (error) { showNotice(error.message); }
+    if (result?.accepted === false) {
+      const message = result.error?.message || "操作未被接受";
+      if (activeMode === "poetry") $("#poetry-status").textContent = message;
+      else showNotice(message);
+    }
+  } catch (error) {
+    if (activeMode === "poetry") $("#poetry-status").textContent = error.message;
+    else showNotice(error.message);
+  }
 }
 
 async function startSolo() {
@@ -300,8 +328,25 @@ ui.next.addEventListener("click", async () => {
 
 ui.start.addEventListener("click", async () => {
   if (started || !context) return;
+  activeMode = $("input[name='play-mode']:checked").value;
+  if (context.mode === "room" && roomState?.gameType) activeMode = roomState.gameType;
+  else if (context.mode === "room" && context.playerId !== roomState?.hostId) activeMode = "idiom";
   started = true;
   ui.start.disabled = true;
+  if (activeMode === "poetry") {
+    ui.startScreen.hidden = true;
+    try {
+      await startPoetry(context.mode === "room" ? roomAction : undefined);
+      if (context.mode === "room") {
+        if (roomState?.gameType === "poetry") renderPoetryRoom(roomState, context.playerId);
+        else if (context.playerId === roomState?.hostId) await roomAction({type:"start_poetry",question:await createPoetryQuestion()});
+      }
+    } catch (error) {
+      started = false; $("#poetry-game").hidden = true; ui.startScreen.hidden = false;
+      updateStartScreen(); ui.startStatus.textContent = error.message;
+    }
+    return;
+  }
   ui.startScreen.hidden = true;
   ui.game.hidden = false;
   ui.input.disabled = true;
