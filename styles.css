@@ -26,27 +26,38 @@ input {
 }
 .game-shell {
   width: min(100%, 560px);
-  min-height: 100vh;
+  min-height: 100svh;
   margin: auto;
-  padding: 28px 16px 22px;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  display: flex;
+  flex-direction: column;
+}
+.game-content {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  padding: 14px 16px 24px;
 }
+
 .game-header {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  row-gap: 12px;
-  padding: 0 5px;
+  height: 60px;
+  flex: 0 0 60px;
+  grid-template-rows: 60px;
+  padding: 0 8px;
 }
+
 .game-header h1 {
   grid-column: 2;
   grid-row: 1;
   text-align: center;
 }
-.game-header .game-meta {
-  grid-column: 1 / -1;
+.game-content > .game-meta {
   justify-content: center;
   padding-bottom: 0;
 }
@@ -272,9 +283,13 @@ footer {
     transform: scale(1);
   }
 }
+
 @media (max-width: 390px) {
-  .game-shell {
-    padding: 20px 10px 16px;
+  .game-content {
+    padding-inline: 10px;
+  }
+  .game-header {
+    padding-inline: 10px;
   }
   .hint-card,
   .wrong-card {
@@ -513,5 +528,219 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .game-header .back-button {
     transition: none;
+  }
+}
+
+/* Poetry uses flat controls and a focused, readable completion state. */
+#poetry-game .game-content {
+  gap: 16px;
+}
+#poetry-game #poetry-round {
+  margin: 2px 5px -8px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: #687065;
+}
+#poetry-game #poetry-status {
+  margin: 0 5px;
+  line-height: 1.7;
+}
+#poetry-game .poetry-card {
+  box-shadow: none;
+}
+#poetry-game .poetry-actions > button {
+  box-shadow: none;
+  transform: none;
+}
+#poetry-game .poetry-actions > button:not(.quiet-button) {
+  background: #527f58;
+}
+@media (hover: hover) and (pointer: fine) {
+  #poetry-game
+    .poetry-actions
+    > button:not(.quiet-button):hover:not(:disabled) {
+    background: #426c48;
+  }
+}
+#poetry-game .poetry-actions > button:not(.quiet-button):active:not(:disabled) {
+  background: #345b3b;
+}
+#poetry-game .poetry-source {
+  margin: 8px 0 0;
+  text-align: center;
+  color: #626a60;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+#poetry-game.is-solved .poetry-card {
+  margin-top: clamp(24px, 6svh, 64px);
+  padding: 28px 18px 20px;
+  background: #fff;
+  border: 0;
+  border-radius: 20px;
+  backdrop-filter: none;
+}
+#poetry-game.is-solved .card-heading {
+  justify-content: center;
+}
+#poetry-game.is-solved .heading-icon {
+  display: none;
+}
+#poetry-game.is-solved .card-heading h2 {
+  color: #668469;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+}
+#poetry-game.is-solved .poetry-slots {
+  margin: 24px 0 0;
+  gap: 0;
+}
+#poetry-game.is-solved .poetry-slot {
+  background: transparent;
+  border: 0;
+  opacity: 1;
+  color: #294b30;
+  font-size: clamp(24px, 6vw, 32px);
+  cursor: default;
+}
+#poetry-game.is-solved .poetry-navigation {
+  justify-content: center;
+}
+#poetry-game.is-solved #poetry-next {
+  width: min(100%, 320px);
+  min-height: 52px;
+}
+
+#poetry-game .poetry-review {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px auto 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: #626a60;
+  font-size: 14px;
+}
+#poetry-game .poetry-review::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+#poetry-game .poetry-review[aria-expanded="true"]::after {
+  transform: rotate(225deg);
+}
+#poetry-game .poetry-review:hover {
+  color: #345b3b;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #poetry-game .poetry-review::after {
+    transition: none;
+  }
+}
+#poetry-game.is-solved .poetry-tiles {
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid #dce5d6;
+}
+#poetry-game.is-solved .poetry-tile:disabled {
+  opacity: 1;
+  cursor: default;
+}
+#poetry-game.is-solved .poetry-tile.review-answer {
+  background: #e3eddf;
+  color: #345b3b;
+}
+#poetry-game.is-solved .poetry-tile.review-extra {
+  background: #eeefea;
+  color: #858b80;
+}
+#poetry-game .poetry-edit-actions {
+  margin-top: 18px;
+}
+#poetry-game .poetry-edit-actions #poetry-submit {
+  min-width: 104px;
+}
+
+#poetry-game .poetry-tile {
+  font-size: clamp(25px, 6.5vw, 28px);
+}
+#poetry-game:not(.is-solved) .poetry-navigation {
+  margin-top: -6px;
+}
+#poetry-game:not(.is-solved) .poetry-navigation .quiet-button {
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #7c827a;
+}
+
+/* Glyph metrics never change between the editable and completed layout. */
+#poetry-game .poetry-slot {
+  font-size: clamp(24px, 6vw, 28px);
+  font-weight: 600;
+  line-height: 1.5;
+  display: grid;
+  place-items: center;
+}
+.poetry-glyph {
+  display: inline-block;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-indent: 0;
+}
+#poetry-game.is-solved .poetry-slots {
+  display: flex;
+  justify-content: center;
+  gap: 0.12em;
+  margin: 16px 0 0;
+}
+#poetry-game.is-solved .poetry-slot {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 48px;
+  font-size: clamp(24px, 6vw, 28px);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Quiet navigation leaves the poem as the focal point. */
+.game-header h1 {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+#poetry-game.is-solved .card-heading h2 {
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #58755b;
+}
+#poetry-game.is-solved .poetry-source {
+  margin-top: 12px;
+}
+#poetry-game.is-solved .poetry-navigation {
+  margin-top: 4px;
+  padding-bottom: 0;
+}
+@media (max-height: 600px) {
+  #poetry-game.is-solved .poetry-card {
+    margin-top: 12px;
+    padding-top: 24px;
   }
 }

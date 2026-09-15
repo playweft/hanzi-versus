@@ -29,55 +29,57 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
       </button>
       <h1>成语寻踪</h1>
-      <div class="game-meta" aria-label="游戏进度">
-        <span id="mode-label">单人模式</span>
-        <span class="meta-divider" aria-hidden="true"></span>
-        <span id="round-label">第 1 / 6 轮</span>
-        <span id="timer" class="timer">--:--</span>
-      </div>
     </header>
-
-    <p id="status" class="status" aria-live="polite">准备开始…</p>
-
-    <section class="content-card hint-card" aria-labelledby="hint-title">
-      <div class="card-heading">
-        <span class="heading-icon hint-icon" aria-hidden="true">💡</span>
-        <div>
-          <h2 id="hint-title">提示词语</h2>
-          <p>这些词语与成语有关：</p>
+    <div class="game-content">
+        <div class="game-meta" aria-label="游戏进度">
+          <span id="mode-label">单人模式</span>
+          <span class="meta-divider" aria-hidden="true"></span>
+          <span id="round-label">第 1 / 6 轮</span>
+          <span id="timer" class="timer">--:--</span>
         </div>
-      </div>
-      <div id="history" class="hint-grid" aria-live="polite">
-        <span id="hint" class="hint-tile current" aria-label="当前 AI 提示">？</span>
-      </div>
 
-      <form id="guess-form" class="guess-form">
-        <label class="sr-only" for="guess">输入四字成语</label>
-        <div class="guess-row">
-          <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="请输入你的猜测..."
-            aria-label="请输入你的猜测" />
-          <button id="submit" type="submit">提交</button>
+      <p id="status" class="status" aria-live="polite">准备开始…</p>
+
+      <section class="content-card hint-card" aria-labelledby="hint-title">
+        <div class="card-heading">
+          <span class="heading-icon hint-icon" aria-hidden="true">💡</span>
+          <div>
+            <h2 id="hint-title">提示词语</h2>
+            <p>这些词语与成语有关：</p>
+          </div>
         </div>
-      </form>
-    </section>
-
-    <section class="content-card wrong-card" aria-labelledby="wrong-title">
-      <div class="card-heading">
-        <span class="heading-icon wrong-icon" aria-hidden="true">×</span>
-        <div>
-          <h2 id="wrong-title">错误猜测</h2>
-          <p>你之前猜过的成语：</p>
+        <div id="history" class="hint-grid" aria-live="polite">
+          <span id="hint" class="hint-tile current" aria-label="当前 AI 提示">？</span>
         </div>
-      </div>
-      <div id="wrong-guesses" class="wrong-list" aria-live="polite">
-        <span class="empty-state">还没有错误猜测</span>
-      </div>
-    </section>
 
-    <section id="notice" class="notice" hidden></section>
-    <button id="next" class="next" type="button" hidden>下一题</button>
+        <form id="guess-form" class="guess-form">
+          <label class="sr-only" for="guess">输入四字成语</label>
+          <div class="guess-row">
+            <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="请输入你的猜测..."
+              aria-label="请输入你的猜测" />
+            <button id="submit" type="submit">提交</button>
+          </div>
+        </form>
+      </section>
 
-    <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
+      <section class="content-card wrong-card" aria-labelledby="wrong-title">
+        <div class="card-heading">
+          <span class="heading-icon wrong-icon" aria-hidden="true">×</span>
+          <div>
+            <h2 id="wrong-title">错误猜测</h2>
+            <p>你之前猜过的成语：</p>
+          </div>
+        </div>
+        <div id="wrong-guesses" class="wrong-list" aria-live="polite">
+          <span class="empty-state">还没有错误猜测</span>
+        </div>
+      </section>
+
+      <section id="notice" class="notice" hidden></section>
+      <button id="next" class="next" type="button" hidden>下一题</button>
+
+      <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
+    </div>
   </main>
 
   <main id="poetry-game" class="game-shell" hidden>
@@ -87,23 +89,26 @@
       </button>
       <h1>拾字成诗</h1>
     </header>
-    <p id="poetry-round" class="eyebrow"></p>
-    <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
-    <section class="content-card poetry-card" aria-labelledby="poetry-title">
-      <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span>
-        <div>
-          <h2 id="poetry-title">拼出诗句</h2>
+    <div class="game-content">
+      <p id="poetry-round" class="eyebrow"></p>
+      <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
+      <section class="content-card poetry-card" aria-labelledby="poetry-title">
+        <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span>
+          <div>
+            <h2 id="poetry-title">拼出诗句</h2>
+            <p id="poetry-instruction">依次选字，点击已选字可撤回</p>
+          </div>
         </div>
-      </div>
-      <div id="poetry-slots" class="poetry-slots"></div>
-      <div id="poetry-tiles" class="poetry-tiles"></div>
-      <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit"
-          disabled>提交</button></div>
-    </section>
-    <p id="poetry-source" class="poetry-source" aria-live="polite"></p>
-    <div class="poetry-actions"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button
-        id="poetry-next">下一题</button></div>
-    <footer>字有来处，诗有余韵。</footer>
+        <div id="poetry-slots" class="poetry-slots"></div>
+        <p id="poetry-source" class="poetry-source" aria-live="polite" hidden></p>
+        <button id="poetry-review" class="quiet-button poetry-review" type="button" aria-expanded="false" aria-controls="poetry-tiles" hidden>查看字盘</button>
+        <div id="poetry-tiles" class="poetry-tiles"></div>
+        <div class="poetry-actions poetry-edit-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit"
+            disabled>提交</button></div>
+      </section>
+      <div class="poetry-actions poetry-navigation"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button
+          id="poetry-next" class="quiet-button">跳过</button></div>
+    </div>
   </main>
   <script type="module" src="./app.js"></script>
 </body>
