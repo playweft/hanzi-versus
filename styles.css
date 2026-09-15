@@ -75,3 +75,6 @@ button:focus-visible { outline: 3px solid #123d3b; outline-offset: 4px; }
 .poetry-source { min-height: 20px; margin: 0 5px; color: #7c827a; font-size: 13px; line-height: 1.8; }
 #poetry-round { color: #90958d; font-size: 12px; font-weight: 400; letter-spacing: 0; margin: 0 5px; }
 @media (max-width: 390px) { .poetry-card { padding-inline: 16px; } .poetry-tiles { gap: 9px; } .poetry-tile { min-height: 60px; height: 60px; font-size: 19px; } }
+
+.poetry-slot.guess-present { background: #e3eddf; border-color: #6c9970; color: #345b3b; }
+.poetry-slot.guess-absent { background: #e9e8e4; border-color: #cccac3; color: #777970; }

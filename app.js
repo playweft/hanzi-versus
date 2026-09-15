@@ -1,11 +1,26 @@
-import { startPoetry, createPoetryQuestion, renderPoetryRoom } from "./poetry-ui.js";
+import {
+  startPoetry,
+  createPoetryQuestion,
+  renderPoetryRoom,
+} from "./poetry-ui.js";
 const $ = (selector) => document.querySelector(selector);
 const ui = {
-  startScreen: $("#start-screen"), startButtons: [...document.querySelectorAll("[data-play-mode]")], startStatus: $("#start-status"), game: $("#game"),
-  mode: $("#mode-label"), round: $("#round-label"), timer: $("#timer"),
-  status: $("#status"), hint: $("#hint"), history: $("#history"), wrongGuesses: $("#wrong-guesses"),
-  form: $("#guess-form"), input: $("#guess"), submit: $("#submit"),
-  notice: $("#notice"), next: $("#next"),
+  startScreen: $("#start-screen"),
+  startButtons: [...document.querySelectorAll("[data-play-mode]")],
+  startStatus: $("#start-status"),
+  game: $("#game"),
+  mode: $("#mode-label"),
+  round: $("#round-label"),
+  timer: $("#timer"),
+  status: $("#status"),
+  hint: $("#hint"),
+  history: $("#history"),
+  wrongGuesses: $("#wrong-guesses"),
+  form: $("#guess-form"),
+  input: $("#guess"),
+  submit: $("#submit"),
+  notice: $("#notice"),
+  next: $("#next"),
 };
 
 const HAN_2 = /^[\u3400-\u9fff]{2}$/u;
@@ -31,14 +46,17 @@ const bridgeProbe = window.setInterval(announceReady, 500);
 announceReady();
 
 window.addEventListener("message", (event) => {
-  if (event.source !== window.parent || event.data?.type !== "playweft:bridge") return;
+  if (event.source !== window.parent || event.data?.type !== "playweft:bridge")
+    return;
   const [candidate] = event.ports;
   if (!candidate) return;
   port = candidate;
   window.clearInterval(bridgeProbe);
   port.onmessage = onMessage;
   port.start();
-  rpc("game.initialize").then(startPlayweft).catch((error) => showNotice(error.message));
+  rpc("game.initialize")
+    .then(startPlayweft)
+    .catch((error) => showNotice(error.message));
 });
 
 function rpc(method, params) {
@@ -46,7 +64,12 @@ function rpc(method, params) {
   const id = crypto.randomUUID();
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    port.postMessage({ jsonrpc: "2.0", id, method, ...(params === undefined ? {} : { params }) });
+    port.postMessage({
+      jsonrpc: "2.0",
+      id,
+      method,
+      ...(params === undefined ? {} : { params }),
+    });
   });
 }
 
@@ -76,39 +99,70 @@ async function startPlayweft(initialContext) {
 
 function updateStartScreen() {
   const inRoom = context?.mode === "room";
-  const guestWaiting = inRoom && roomState && context.playerId !== roomState.hostId && !roomState.gameType;
-  ui.startButtons.forEach(button => {
-    button.disabled = started || !context || (inRoom && !roomState) || guestWaiting
-      || Boolean(inRoom && roomState?.gameType && roomState.gameType !== button.dataset.playMode);
+  const guestWaiting =
+    inRoom &&
+    roomState &&
+    context.playerId !== roomState.hostId &&
+    !roomState.gameType;
+  ui.startButtons.forEach((button) => {
+    button.disabled =
+      started ||
+      !context ||
+      (inRoom && !roomState) ||
+      guestWaiting ||
+      Boolean(
+        inRoom &&
+        roomState?.gameType &&
+        roomState.gameType !== button.dataset.playMode,
+      );
   });
-  ui.startStatus.textContent = !context ? "正在连接…"
-    : inRoom && !roomState ? "正在同步房间…"
-    : guestWaiting ? "等待房主选择玩法。"
-    : inRoom && roomState.gameType ? "点击对应玩法，加入房间。"
-    : inRoom ? "选择玩法，开始双人对战。"
-    : "点击玩法，即可开始。";
+  ui.startStatus.textContent = !context
+    ? "正在连接…"
+    : inRoom && !roomState
+      ? "正在同步房间…"
+      : guestWaiting
+        ? "等待房主选择玩法。"
+        : inRoom && roomState.gameType
+          ? "点击对应玩法，加入房间。"
+          : inRoom
+            ? "选择玩法，开始双人对战。"
+            : "点击玩法，即可开始。";
 }
 
 async function loadIdioms() {
   if (idioms.length) return idioms;
   const response = await fetch("./data/idioms_top4500.txt");
   if (!response.ok) throw new Error("题库加载失败");
-  idioms = (await response.text()).split(/\r?\n/).map((line) => line.split("\t")[0]).filter((word) => HAN_4.test(word));
+  idioms = (await response.text())
+    .split(/\r?\n/)
+    .map((line) => line.split("\t")[0])
+    .filter((word) => HAN_4.test(word));
   if (!idioms.length) throw new Error("题库为空");
   return idioms;
 }
 
-function clean(value) { return String(value ?? "").trim().replace(/\s/g, ""); }
+function clean(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s/g, "");
+}
 function isValidHint(hint, answer) {
-  return HAN_2.test(hint) && [...hint].every((character) => ![...answer].includes(character));
+  return (
+    HAN_2.test(hint) &&
+    [...hint].every((character) => ![...answer].includes(character))
+  );
 }
 function pickFallback(answer, round) {
-  const offset = [...answer].reduce((sum, character) => sum + character.codePointAt(0), 0);
+  const offset = [...answer].reduce(
+    (sum, character) => sum + character.codePointAt(0),
+    0,
+  );
   return FALLBACK_HINTS[(offset + round - 1) % FALLBACK_HINTS.length];
 }
 function extractHint(reply, answer) {
-  const labeled = [...reply.matchAll(/(?:最终提示|提示)\s*[：:]\s*([\u3400-\u9fff]{2})/gu)]
-    .map((match) => match[1]);
+  const labeled = [
+    ...reply.matchAll(/(?:最终提示|提示)\s*[：:]\s*([\u3400-\u9fff]{2})/gu),
+  ].map((match) => match[1]);
   return labeled.reverse().find((value) => isValidHint(value, answer));
 }
 
@@ -134,14 +188,17 @@ async function askAi(answer, hints, guesses, round) {
   if (!port) return pickFallback(answer, round);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const rawReply = await rpc("languageModel.prompt", { input: attempt === 0 ? prompt : compactRetryPrompt });
+      const rawReply = await rpc("languageModel.prompt", {
+        input: attempt === 0 ? prompt : compactRetryPrompt,
+      });
       if (debugAi) console.info("[Hanzi Versus] AI response", rawReply);
       const reply = clean(rawReply);
       const candidate = extractHint(reply, answer);
       if (candidate) return candidate;
     } catch (error) {
       if (debugAi) console.error("[Hanzi Versus] AI request failed", error);
-      if (attempt === 1) showNotice(`AI 提示不可用，已使用本地线索。${error.message}`);
+      if (attempt === 1)
+        showNotice(`AI 提示不可用，已使用本地线索。${error.message}`);
     }
   }
   return pickFallback(answer, round);
@@ -151,27 +208,42 @@ function setNotice(message) {
   ui.notice.hidden = !message;
   ui.notice.textContent = message || "";
 }
-function showNotice(message) { setNotice(message); window.setTimeout(() => setNotice(""), 4800); }
+function showNotice(message) {
+  setNotice(message);
+  window.setTimeout(() => setNotice(""), 4800);
+}
 function setHistory(hints) {
-  ui.history.replaceChildren(...hints.map((hint, index) => {
-    const el = document.createElement("span");
-    el.className = `hint-tile${index === hints.length - 1 ? " current" : ""}`;
-    el.textContent = hint;
-    if (index === hints.length - 1) el.id = "hint";
-    return el;
-  }));
+  ui.history.replaceChildren(
+    ...hints.map((hint, index) => {
+      const el = document.createElement("span");
+      el.className = `hint-tile${index === hints.length - 1 ? " current" : ""}`;
+      el.textContent = hint;
+      if (index === hints.length - 1) el.id = "hint";
+      return el;
+    }),
+  );
   ui.hint = $("#hint");
 }
 function setWrongGuesses(guesses) {
   if (!guesses.length) {
-    const empty = document.createElement("span"); empty.className = "empty-state"; empty.textContent = "还没有错误猜测";
-    ui.wrongGuesses.replaceChildren(empty); return;
+    const empty = document.createElement("span");
+    empty.className = "empty-state";
+    empty.textContent = "还没有错误猜测";
+    ui.wrongGuesses.replaceChildren(empty);
+    return;
   }
-  ui.wrongGuesses.replaceChildren(...guesses.map(({ guess }) => {
-    const el = document.createElement("span"); el.className = "wrong-chip"; el.textContent = guess; return el;
-  }));
+  ui.wrongGuesses.replaceChildren(
+    ...guesses.map(({ guess }) => {
+      const el = document.createElement("span");
+      el.className = "wrong-chip";
+      el.textContent = guess;
+      return el;
+    }),
+  );
 }
-function nowServer() { return Date.now() + clockOffset; }
+function nowServer() {
+  return Date.now() + clockOffset;
+}
 
 function applyRoomState(update) {
   roomState = update.state;
@@ -186,9 +258,20 @@ function applyRoomState(update) {
     return;
   }
   if (activeMode === "poetry") {
-    if (!roomState.gameType && context.playerId === roomState.hostId && !poetryStarting) {
+    if (
+      !roomState.gameType &&
+      context.playerId === roomState.hostId &&
+      !poetryStarting
+    ) {
       poetryStarting = true;
-      createPoetryQuestion().then(question => roomAction({type:"start_poetry",question})).catch(error => { $("#poetry-status").textContent = error.message; }).finally(() => { poetryStarting = false; });
+      createPoetryQuestion()
+        .then((question) => roomAction({ type: "start_poetry", question }))
+        .catch((error) => {
+          $("#poetry-status").textContent = error.message;
+        })
+        .finally(() => {
+          poetryStarting = false;
+        });
     }
     return;
   }
@@ -206,12 +289,26 @@ function renderRoom() {
   ui.round.textContent = state.round ? `第 ${state.round} / 6 轮` : "准备中";
   setHistory(state.hints || []);
   if (!(state.hints || []).length) setHistory([state.currentHint || "？"]);
-  setWrongGuesses((state.guesses || []).filter((item) => item.player === context.playerId && item.guess !== state.revealedAnswer));
-  ui.next.hidden = !(context.playerId === state.hostId && ["solved", "need_new_answer"].includes(state.phase));
+  setWrongGuesses(
+    (state.guesses || []).filter(
+      (item) =>
+        item.player === context.playerId && item.guess !== state.revealedAnswer,
+    ),
+  );
+  ui.next.hidden = !(
+    context.playerId === state.hostId &&
+    ["solved", "need_new_answer"].includes(state.phase)
+  );
   ui.next.textContent = state.phase === "solved" ? "下一题" : "换一个成语";
-  const canGuess = ["guessing", "race_window", "last_chance"].includes(state.phase)
-    && !(state.phase === "last_chance" && state.extraPlayer !== context.playerId)
-    && !(state.phase === "race_window" && state.firstWrongPlayer === context.playerId);
+  const canGuess =
+    ["guessing", "race_window", "last_chance"].includes(state.phase) &&
+    !(
+      state.phase === "last_chance" && state.extraPlayer !== context.playerId
+    ) &&
+    !(
+      state.phase === "race_window" &&
+      state.firstWrongPlayer === context.playerId
+    );
   ui.input.disabled = !canGuess;
   ui.submit.disabled = !canGuess;
   const statuses = {
@@ -219,7 +316,10 @@ function renderRoom() {
     generating: "AI 正在构思新的二字提示…",
     guessing: "双方可同时抢答。",
     race_window: `${playerName(state.firstWrongPlayer)} 未猜中，正在确认是否有竞态提交…`,
-    last_chance: state.extraPlayer === context.playerId ? "轮到你：获得一次 8 秒延时猜测。" : "对手正在获得一次延时猜测。",
+    last_chance:
+      state.extraPlayer === context.playerId
+        ? "轮到你：获得一次 8 秒延时猜测。"
+        : "对手正在获得一次延时猜测。",
     solved: `${playerName(state.winner)} 猜中了：${state.revealedAnswer}。`,
     need_new_answer: `六条提示仍未猜出，答案是：${state.revealedAnswer}。`,
   };
@@ -229,7 +329,10 @@ function renderRoom() {
 
 function renderTimer(deadline) {
   window.clearTimeout(timerHandle);
-  if (!deadline) { ui.timer.textContent = "--:--"; return; }
+  if (!deadline) {
+    ui.timer.textContent = "--:--";
+    return;
+  }
   const tick = () => {
     const remaining = Math.max(0, deadline - nowServer());
     ui.timer.textContent = `00:${String(Math.ceil(remaining / 1000)).padStart(2, "0")}`;
@@ -240,18 +343,42 @@ function renderTimer(deadline) {
 
 async function maybeRunRoomAutomation() {
   const state = roomState;
-  if (!started || !context || !state || activeMode === "poetry" || state.gameType === "poetry") return;
+  if (
+    !started ||
+    !context ||
+    !state ||
+    activeMode === "poetry" ||
+    state.gameType === "poetry"
+  )
+    return;
   if (state.phase === "awaiting_answer" && context.playerId === state.hostId) {
-    const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
-    if (pool.length) await roomAction({ type: "start_game", answer: pool[Math.floor(Math.random() * pool.length)] });
+    const pool = await loadIdioms().catch((error) => {
+      showNotice(error.message);
+      return [];
+    });
+    if (pool.length)
+      await roomAction({
+        type: "start_game",
+        answer: pool[Math.floor(Math.random() * pool.length)],
+      });
     return;
   }
-  if (state.phase === "generating" && context.playerId === state.hostId && state.answerForHint) {
+  if (
+    state.phase === "generating" &&
+    context.playerId === state.hostId &&
+    state.answerForHint
+  ) {
     const key = `${state.round}:${state.hints.length}:${state.answerForHint}`;
     if (generationKey === key) return;
     generationKey = key;
-    const hint = await askAi(state.answerForHint, state.hints, state.guesses, state.round);
-    if (roomState?.phase === "generating") await roomAction({ type: "set_hint", hint });
+    const hint = await askAi(
+      state.answerForHint,
+      state.hints,
+      state.guesses,
+      state.round,
+    );
+    if (roomState?.phase === "generating")
+      await roomAction({ type: "set_hint", hint });
     return;
   }
   if (state.phase === "race_window") {
@@ -273,16 +400,27 @@ async function roomAction(action) {
       else showNotice(message);
     }
   } catch (error) {
-    if (activeMode === "poetry") $("#poetry-status").textContent = error.message;
+    if (activeMode === "poetry")
+      $("#poetry-status").textContent = error.message;
     else showNotice(error.message);
   }
 }
 
 async function startSolo() {
-  const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
+  const pool = await loadIdioms().catch((error) => {
+    showNotice(error.message);
+    return [];
+  });
   if (!pool.length) return;
-  solo = { answer: pool[Math.floor(Math.random() * pool.length)], hints: [], guesses: [], round: 0, solved: false };
-  setHistory(["？"]); setWrongGuesses([]);
+  solo = {
+    answer: pool[Math.floor(Math.random() * pool.length)],
+    hints: [],
+    guesses: [],
+    round: 0,
+    solved: false,
+  };
+  setHistory(["？"]);
+  setWrongGuesses([]);
   await nextSoloHint();
 }
 
@@ -291,17 +429,22 @@ async function nextSoloHint() {
   if (solo.round >= 6) {
     solo.solved = true;
     ui.status.textContent = `六条提示仍未猜出，答案是：${solo.answer}`;
-    ui.next.hidden = false; ui.next.textContent = "下一题"; return;
+    ui.next.hidden = false;
+    ui.next.textContent = "下一题";
+    return;
   }
   solo.round += 1;
   ui.round.textContent = `第 ${solo.round} / 6 轮`;
   ui.status.textContent = "AI 正在生成二字提示…";
-  ui.input.disabled = true; ui.submit.disabled = true;
+  ui.input.disabled = true;
+  ui.submit.disabled = true;
   const hint = await askAi(solo.answer, solo.hints, solo.guesses, solo.round);
   solo.hints.push(hint);
   setHistory(solo.hints);
   ui.status.textContent = "输入一个四字成语来猜测。";
-  ui.input.disabled = false; ui.submit.disabled = false; ui.input.focus();
+  ui.input.disabled = false;
+  ui.submit.disabled = false;
+  ui.input.focus();
 }
 
 ui.form.addEventListener("submit", async (event) => {
@@ -313,8 +456,13 @@ ui.form.addEventListener("submit", async (event) => {
   if (!solo || solo.solved) return;
   solo.guesses.push({ round: solo.round, guess });
   if (guess === solo.answer) {
-    solo.solved = true; ui.status.textContent = `答对了！答案就是：${solo.answer}`;
-    ui.next.hidden = false; ui.next.textContent = "下一题"; ui.input.disabled = true; ui.submit.disabled = true; return;
+    solo.solved = true;
+    ui.status.textContent = `答对了！答案就是：${solo.answer}`;
+    ui.next.hidden = false;
+    ui.next.textContent = "下一题";
+    ui.input.disabled = true;
+    ui.submit.disabled = true;
+    return;
   }
   setWrongGuesses(solo.guesses);
   showNotice("没有猜中，AI 会给出下一条提示。");
@@ -323,53 +471,75 @@ ui.form.addEventListener("submit", async (event) => {
 
 ui.next.addEventListener("click", async () => {
   if (context?.mode === "room") {
-    const pool = await loadIdioms().catch((error) => { showNotice(error.message); return []; });
-    if (pool.length) await roomAction({ type: "start_game", answer: pool[Math.floor(Math.random() * pool.length)] });
+    const pool = await loadIdioms().catch((error) => {
+      showNotice(error.message);
+      return [];
+    });
+    if (pool.length)
+      await roomAction({
+        type: "start_game",
+        answer: pool[Math.floor(Math.random() * pool.length)],
+      });
     return;
   }
-  await startSolo(); ui.next.hidden = true; ui.input.disabled = false; ui.submit.disabled = false;
+  await startSolo();
+  ui.next.hidden = true;
+  ui.input.disabled = false;
+  ui.submit.disabled = false;
 });
 
-ui.startButtons.forEach(button => button.addEventListener("click", async () => {
-  if (started || !context || button.disabled) return;
-  activeMode = button.dataset.playMode;
-  if (context.mode === "room" && roomState?.gameType) activeMode = roomState.gameType;
-  else if (context.mode === "room" && context.playerId !== roomState?.hostId) activeMode = "idiom";
-  started = true;
-  updateStartScreen();
-  if (activeMode === "poetry") {
-    ui.startScreen.hidden = true;
-    try {
-      await startPoetry(context.mode === "room" ? roomAction : undefined);
-      if (context.mode === "room") {
-        if (roomState?.gameType === "poetry") renderPoetryRoom(roomState, context.playerId);
-        else if (context.playerId === roomState?.hostId) await roomAction({type:"start_poetry",question:await createPoetryQuestion()});
+ui.startButtons.forEach((button) =>
+  button.addEventListener("click", async () => {
+    if (started || !context || button.disabled) return;
+    activeMode = button.dataset.playMode;
+    if (context.mode === "room" && roomState?.gameType)
+      activeMode = roomState.gameType;
+    else if (context.mode === "room" && context.playerId !== roomState?.hostId)
+      activeMode = "idiom";
+    started = true;
+    updateStartScreen();
+    if (activeMode === "poetry") {
+      ui.startScreen.hidden = true;
+      try {
+        await startPoetry(context.mode === "room" ? roomAction : undefined);
+        if (context.mode === "room") {
+          if (roomState?.gameType === "poetry")
+            renderPoetryRoom(roomState, context.playerId);
+          else if (context.playerId === roomState?.hostId)
+            await roomAction({
+              type: "start_poetry",
+              question: await createPoetryQuestion(),
+            });
+        }
+      } catch (error) {
+        started = false;
+        $("#poetry-game").hidden = true;
+        ui.startScreen.hidden = false;
+        updateStartScreen();
+        ui.startStatus.textContent = error.message;
       }
-    } catch (error) {
-      started = false; $("#poetry-game").hidden = true; ui.startScreen.hidden = false;
-      updateStartScreen(); ui.startStatus.textContent = error.message;
+      return;
     }
-    return;
-  }
-  ui.startScreen.hidden = true;
-  ui.game.hidden = false;
-  ui.input.disabled = true;
-  ui.submit.disabled = true;
-  if (context.mode === "room") {
-    ui.status.textContent = "等待房间同步…";
-    renderRoom();
-    await maybeRunRoomAutomation();
-  } else {
-    await startSolo();
-    if (!solo) {
-      started = false;
-      ui.game.hidden = true;
-      ui.startScreen.hidden = false;
-      updateStartScreen();
-      ui.startStatus.textContent = "题库加载失败，请点击玩法重试。";
+    ui.startScreen.hidden = true;
+    ui.game.hidden = false;
+    ui.input.disabled = true;
+    ui.submit.disabled = true;
+    if (context.mode === "room") {
+      ui.status.textContent = "等待房间同步…";
+      renderRoom();
+      await maybeRunRoomAutomation();
+    } else {
+      await startSolo();
+      if (!solo) {
+        started = false;
+        ui.game.hidden = true;
+        ui.startScreen.hidden = false;
+        updateStartScreen();
+        ui.startStatus.textContent = "题库加载失败，请点击玩法重试。";
+      }
     }
-  }
-}));
+  }),
+);
 
 // Static previews can start locally; embedded games wait for their bridge.
 if (window.parent === window) {

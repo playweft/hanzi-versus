@@ -1,93 +1,109 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f5ef" />
-    <title>汉字对决</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <section id="start-screen" class="start-screen" aria-labelledby="start-title">
-      <img class="start-icon" src="./icon.svg" alt="" width="96" height="96" />
-      <p class="eyebrow">HANZI VERSUS</p>
-      <h1 id="start-title">汉字对决</h1>
-      <p class="start-description">一字一句，皆有妙趣。请选择一种玩法。</p>
-      <div class="mode-options" role="group" aria-label="选择玩法">
-        <button type="button" data-play-mode="idiom" disabled><strong>成语寻踪</strong><small>循着提示，猜出成语。</small></button>
-        <button type="button" data-play-mode="poetry" disabled><strong>拾字成诗</strong><small>拾取散字，拼成诗句。九选五 / 十二选七</small></button>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f5ef" />
+  <title>汉字对决</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <section id="start-screen" class="start-screen" aria-labelledby="start-title">
+    <img class="start-icon" src="./icon.svg" alt="" width="96" height="96" />
+    <p class="eyebrow">HANZI VERSUS</p>
+    <h1 id="start-title">汉字对决</h1>
+    <p class="start-description">一字一句，皆有妙趣。请选择一种玩法。</p>
+    <div class="mode-options" role="group" aria-label="选择玩法">
+      <button type="button" data-play-mode="idiom" disabled><strong>成语寻踪</strong><small>循着提示，猜出成语。</small></button>
+      <button type="button" data-play-mode="poetry" disabled><strong>拾字成诗</strong><small>拾取散字，拼成诗句。九选五 /
+          十二选七</small></button>
+    </div>
+    <p id="start-status" class="start-status" aria-live="polite">正在连接…</p>
+  </section>
+
+  <main id="game" class="game-shell" hidden>
+    <header class="game-header">
+      <div>
+        <h1>成语寻踪</h1>
       </div>
-      <p id="start-status" class="start-status" aria-live="polite">正在连接…</p>
-    </section>
-    <main id="game" class="game-shell" hidden>
-      <header class="game-header">
+      <div class="game-meta" aria-label="游戏进度">
+        <span id="mode-label">单人模式</span>
+        <span class="meta-divider" aria-hidden="true"></span>
+        <span id="round-label">第 1 / 6 轮</span>
+        <span id="timer" class="timer">--:--</span>
+      </div>
+    </header>
+
+    <p id="status" class="status" aria-live="polite">准备开始…</p>
+
+    <section class="content-card hint-card" aria-labelledby="hint-title">
+      <div class="card-heading">
+        <span class="heading-icon hint-icon" aria-hidden="true">💡</span>
         <div>
-          <p class="eyebrow">HANZI VERSUS</p>
-          <h1>成语寻踪</h1>
+          <h2 id="hint-title">提示词语</h2>
+          <p>这些词语与成语有关：</p>
         </div>
-        <div class="game-meta" aria-label="游戏进度">
-          <span id="mode-label">单人模式</span>
-          <span class="meta-divider" aria-hidden="true"></span>
-          <span id="round-label">第 1 / 6 轮</span>
-          <span id="timer" class="timer">--:--</span>
+      </div>
+      <div id="history" class="hint-grid" aria-live="polite">
+        <span id="hint" class="hint-tile current" aria-label="当前 AI 提示">？</span>
+      </div>
+
+      <form id="guess-form" class="guess-form">
+        <label class="sr-only" for="guess">输入四字成语</label>
+        <div class="guess-row">
+          <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="请输入你的猜测..."
+            aria-label="请输入你的猜测" />
+          <button id="submit" type="submit">提交</button>
         </div>
-      </header>
+      </form>
+    </section>
 
-      <p id="status" class="status" aria-live="polite">准备开始…</p>
-
-      <section class="content-card hint-card" aria-labelledby="hint-title">
-        <div class="card-heading">
-          <span class="heading-icon hint-icon" aria-hidden="true">💡</span>
-          <div>
-            <h2 id="hint-title">提示词语</h2>
-            <p>这些词语与成语有关：</p>
-          </div>
+    <section class="content-card wrong-card" aria-labelledby="wrong-title">
+      <div class="card-heading">
+        <span class="heading-icon wrong-icon" aria-hidden="true">×</span>
+        <div>
+          <h2 id="wrong-title">错误猜测</h2>
+          <p>你之前猜过的成语：</p>
         </div>
-        <div id="history" class="hint-grid" aria-live="polite">
-          <span id="hint" class="hint-tile current" aria-label="当前 AI 提示">？</span>
+      </div>
+      <div id="wrong-guesses" class="wrong-list" aria-live="polite">
+        <span class="empty-state">还没有错误猜测</span>
+      </div>
+    </section>
+
+    <section id="notice" class="notice" hidden></section>
+    <button id="next" class="next" type="button" hidden>下一题</button>
+
+    <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
+  </main>
+
+  <main id="poetry-game" class="game-shell" hidden>
+    <header class="game-header">
+      <div>
+        <h1>拾字成诗</h1>
+      </div><button class="quiet-button" onclick="location.reload()">返回首页</button>
+    </header>
+    <p id="poetry-round" class="eyebrow"></p>
+    <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
+    <section class="content-card poetry-card" aria-labelledby="poetry-title">
+      <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span>
+        <div>
+          <h2 id="poetry-title">拼出诗句</h2>
         </div>
+      </div>
+      <div id="poetry-slots" class="poetry-slots"></div>
+      <div id="poetry-tiles" class="poetry-tiles"></div>
+      <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit"
+          disabled>提交</button></div>
+    </section>
+    <p id="poetry-source" class="poetry-source" aria-live="polite"></p>
+    <div class="poetry-actions"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button
+        id="poetry-next">下一题</button></div>
+    <footer>字有来处，诗有余韵。</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
 
-        <form id="guess-form" class="guess-form">
-          <label class="sr-only" for="guess">输入四字成语</label>
-          <div class="guess-row">
-            <input id="guess" inputmode="text" autocomplete="off" maxlength="4" placeholder="请输入你的猜测..." aria-label="请输入你的猜测" />
-            <button id="submit" type="submit">提交</button>
-          </div>
-        </form>
-      </section>
-
-      <section class="content-card wrong-card" aria-labelledby="wrong-title">
-        <div class="card-heading">
-          <span class="heading-icon wrong-icon" aria-hidden="true">×</span>
-          <div>
-            <h2 id="wrong-title">错误猜测</h2>
-            <p>你之前猜过的成语：</p>
-          </div>
-        </div>
-        <div id="wrong-guesses" class="wrong-list" aria-live="polite">
-          <span class="empty-state">还没有错误猜测</span>
-        </div>
-      </section>
-
-      <section id="notice" class="notice" hidden></section>
-      <button id="next" class="next" type="button" hidden>下一题</button>
-
-      <footer>先答错会给对手留下 0.8 秒竞答窗口</footer>
-    </main>
-    <main id="poetry-game" class="game-shell" hidden>
-      <header class="game-header"><div><p class="eyebrow">HANZI VERSUS</p><h1>拾字成诗</h1></div><button class="quiet-button" onclick="location.reload()">返回首页</button></header>
-      <p id="poetry-round" class="eyebrow"></p>
-      <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
-      <section class="content-card poetry-card" aria-labelledby="poetry-title">
-        <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span><div><h2 id="poetry-title">拼出诗句</h2><p>从下方选字，依次填入：</p></div></div>
-        <div id="poetry-slots" class="poetry-slots"></div>
-        <div id="poetry-tiles" class="poetry-tiles"></div>
-        <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit" disabled>提交</button></div>
-      </section>
-      <p id="poetry-source" class="poetry-source" aria-live="polite"></p>
-      <div class="poetry-actions"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button id="poetry-next">下一题</button></div>
-      <footer>字有来处，诗有余韵。<br />经典诗句精选 · 无需 AI 等待</footer>
-    </main>
-    <script type="module" src="./app.js"></script>
-  </body>
 </html>

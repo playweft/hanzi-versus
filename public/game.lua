@@ -108,6 +108,7 @@ function on_action(state, action, context)
     state.round = state.round + 1
     state.phase = "poetry_guessing"
     state.poetry = { id = tostring(context.actionAt) .. ":" .. tostring(state.round), tiles = q.tiles, length = size, tier = (q.tier == "normal" or q.tier == "advanced") and q.tier or "basic" }
+    state.poetryFeedback = {}
     state.poetryAnswers = q.answers
     state.answer = q.answer
     state.poetryTitle = q.title
@@ -137,7 +138,23 @@ function on_action(state, action, context)
         break
       end
     end
-    if not correct then return reject("TRY_AGAIN", "还没拼对，试着调整字的顺序。") end
+    if not correct then
+      if state.poetry.tier ~= "advanced" then return reject("TRY_AGAIN", "还没拼对，试着调整字的顺序。") end
+      local remaining, present = {}, {}
+      for i = 1, #state.answer, 3 do
+        local c = string.sub(state.answer, i, i + 2)
+        remaining[c] = (remaining[c] or 0) + 1
+      end
+      for i = 1, #action.guess, 3 do
+        local c = string.sub(action.guess, i, i + 2)
+        local found = (remaining[c] or 0) > 0
+        present[#present + 1] = found
+        if found then remaining[c] = remaining[c] - 1 end
+      end
+      state.poetryFeedback = state.poetryFeedback or {}
+      state.poetryFeedback[context.actor.id] = { guess = action.guess, present = present }
+      return { accepted = true, state = state, events = {} }
+    end
     state.phase = "poetry_solved"
     state.winner = context.actor.id
     state.revealedAnswer = action.guess
@@ -266,6 +283,7 @@ function view(state, events, context)
   local visible = {
     gameType = state.gameType,
     poetry = state.poetry,
+    poetryFeedback = state.phase == "poetry_guessing" and state.poetryFeedback and state.poetryFeedback[context.viewer.id] or nil,
     players = state.players,
     hostId = state.hostId,
     phase = state.phase,

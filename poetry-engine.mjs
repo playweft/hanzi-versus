@@ -128,6 +128,9 @@ export function pickPoem(poems, random = Math.random, previousId) {
 }
 // School tiers proxy familiarity. Every tied line remains eligible (weights 4:2:1).
 export const FAMILIARITY_WEIGHTS = { basic: 4, normal: 2, advanced: 1 };
+export function canDistract(target, candidate) {
+  return (FAMILIARITY_WEIGHTS[candidate.tier] ?? 1) >= (FAMILIARITY_WEIGHTS[target.tier] ?? 1);
+}
 export function rankDistractors(candidates, random = Math.random) {
   return candidates.map(candidate => ({ candidate,
     key: -Math.log(Math.max(Number.MIN_VALUE, 1 - random()))
@@ -141,7 +144,7 @@ export function makeQuestion(poems, random = Math.random, previousId) {
   const answer = poem.lines[Math.floor(random() * poem.lines.length)];
   const extraCount = answer.length === 5 ? 4 : 5;
   // Rank all eligible lines, so each tied line receives its own weighted chance.
-  const candidates = rankDistractors(poems.filter(p => p.id !== poem.id).flatMap(p =>
+  const candidates = rankDistractors(poems.filter(p => p.id !== poem.id && canDistract(poem, p)).flatMap(p =>
     p.lines.filter(line => line.length === answer.length && overlap(answer, line) < line.length)
       .map(line => ({ poem: p, line, score: overlap(answer, line) }))
   ), random);
@@ -154,4 +157,14 @@ export function makeQuestion(poems, random = Math.random, previousId) {
 export function validAnswers(poems, tiles, length) {
   return poems.flatMap(poem => poem.lines.filter(line => line.length === length && overlap(line, tiles) === length)
     .map(line => ({ line, title: poem.title, author: poem.author })));
+}
+
+// Membership only, not position correctness; consume repeated letters once each.
+export function guessMembership(answer, guess) {
+  const remaining = countsOf(answer);
+  return [...guess].map(char => {
+    const present = (remaining.get(char) || 0) > 0;
+    if (present) remaining.set(char, remaining.get(char) - 1);
+    return present;
+  });
 }

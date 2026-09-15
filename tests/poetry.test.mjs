@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors } from '../poetry-engine.mjs';
+import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors, canDistract, guessMembership } from '../poetry-engine.mjs';
 const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 let seed=42;
 const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
@@ -26,7 +26,7 @@ test('random questions keep all answer tiles, exact board sizes and best overlap
   assert.ok(validAnswers(poems,q.tiles,q.answer.length).some(a=>a.line===q.answer));
   for(const source of q.sources) assert.ok(overlap(source.line,q.tiles)<source.line.length);
   assert.equal(overlap(q.sources[0].line,q.tiles),Math.min(q.answer.length-1,overlap(q.answer,q.sources[0].line)+(q.answer.length===5?4:5)));
-  const max=Math.max(...poems.filter(p=>p.id!==q.poemId).flatMap(p=>p.lines.filter(l=>l!==q.answer&&l.length===q.answer.length&&overlap(q.answer,l)<l.length).map(l=>overlap(q.answer,l))));
+  const max=Math.max(...poems.filter(p=>p.id!==q.poemId && canDistract({tier:q.tier},p)).flatMap(p=>p.lines.filter(l=>l!==q.answer&&l.length===q.answer.length&&overlap(q.answer,l)<l.length).map(l=>overlap(q.answer,l))));
   assert.equal(overlap(q.answer,q.sources[0].line),max);
  }
  assert.deepEqual([...sizes].sort(),[5,7]);assert.ok([...sourceCounts].every(n=>n===1 || n===2));
@@ -175,4 +175,30 @@ test('each equally familiar tied line has its own chance, including lines from t
  const counts={a:0,b:0,c:0};
  for(let i=0;i<6000;i++) counts[rankDistractors(candidates,random)[0].line]++;
  Object.values(counts).forEach(n=>assert.ok(Math.abs(n/6000-1/3)<.03));
+});
+
+test('decoys never come from a less familiar pool than the target',()=>{
+ const p=tier=>({tier});
+ assert.ok(canDistract(p('basic'),p('basic')));
+ assert.ok(!canDistract(p('basic'),p('normal')));
+ assert.ok(!canDistract(p('basic'),p('advanced')));
+ assert.ok(canDistract(p('normal'),p('basic')));
+ assert.ok(canDistract(p('normal'),p('normal')));
+ assert.ok(!canDistract(p('normal'),p('advanced')));
+ for(const tier of ['basic','normal','advanced']) assert.ok(canDistract(p('advanced'),p(tier)));
+ const tiers=new Set();
+ for(let i=0;i<120;i++) {
+  const q=makeQuestion(poems,random);tiers.add(q.tier);
+  for(const source of q.sources) {
+   const candidate=poems.find(p=>p.lines.includes(source.line));
+   assert.ok(canDistract({tier:q.tier},candidate));
+  }
+ }
+ assert.equal(tiers.size,3);
+});
+
+test('advanced guess feedback counts membership, not positions, and caps duplicates',()=>{
+ assert.deepEqual(guessMembership('床前明月光','前床明山雨'),[true,true,true,false,false]);
+ assert.deepEqual(guessMembership('床前明月光','床床床月光'),[true,false,false,true,true]);
+ assert.deepEqual(guessMembership('人人甲乙丙','人甲人丁人'),[true,true,true,false,false]);
 });

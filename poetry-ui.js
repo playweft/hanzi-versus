@@ -1,6 +1,6 @@
-import { makeQuestion, validAnswers } from './poetry-engine.mjs';
+import { makeQuestion, validAnswers, guessMembership } from './poetry-engine.mjs';
 const $ = s => document.querySelector(s);
-let poems, question, selected = [], solved = false, round = 0, room, act, busy = false;
+let poems, question, selected = [], solved = false, round = 0, room, act, busy = false, feedback = null;
 export async function loadPoetry() {
   if (!poems) {
     const response = await fetch('./data/poetry-curated.json');
@@ -27,14 +27,15 @@ async function next() {
   $('#poetry-next').disabled = true;
   try {
     if (act) await act({type:'start_poetry', question:await createPoetryQuestion()});
-    else { question = await createPoetryQuestion(); round++; selected=[]; solved=false; render(); }
+    else { question = await createPoetryQuestion(); round++; selected=[]; solved=false; feedback=null; render(); }
   } catch (error) { $('#poetry-status').textContent = error.message; }
   finally { busy=false; $('#poetry-next').disabled=false; }
 }
 export function renderPoetryRoom(state, playerId) {
   room = {state,playerId};
   if (!state.poetry) return;
-  if (question?.id !== state.poetry.id) { selected=[]; }
+  if (question?.id !== state.poetry.id) { selected=[]; feedback=null; }
+  if (state.poetryFeedback?.guess === selected.map(i=>state.poetry.tiles[i]).join('')) feedback=state.poetryFeedback;
   question = state.poetry; round=state.round; solved=state.phase==='poetry_solved';
   render();
 }
@@ -52,25 +53,29 @@ function render() {
     const button=document.createElement('button');
     button.type='button'; button.className='poetry-slot';
     button.textContent=selected[i] === undefined ? '' : question.tiles[selected[i]];
-    button.setAttribute('aria-label',`第 ${i+1} 字${button.textContent ? ' '+button.textContent+'，点击撤回' : '，待选'}`);
+    if (!solved && question.tier==='advanced' && feedback && selected[i]!==undefined) {
+      button.classList.add(feedback.present[i] ? 'guess-present' : 'guess-absent');
+      button.title=feedback.present[i] ? '目标句中有这个字，不代表位置正确' : '目标句中没有这个字，或数量已用完';
+    }
+    button.setAttribute('aria-label',`第 ${i+1} 字${button.textContent ? ' '+button.textContent+(button.title ? '，'+button.title : '')+'，点击撤回' : '，待选'}`);
     button.disabled=solved || selected[i]===undefined;
-    button.onclick=()=>{selected.splice(i,1);render();};return button;
+    button.onclick=()=>{selected.splice(i,1);feedback=null;render();};return button;
   }));
   $('#poetry-tiles').style.setProperty('--columns',length===5 ? 3:4);
   $('#poetry-tiles').replaceChildren(...question.tiles.map((char,i)=> {
     const button=document.createElement('button'); button.type='button'; button.className='poetry-tile';
     button.textContent=char; button.disabled=solved || selected.includes(i) || selected.length===length;
     button.setAttribute('aria-label',`${char}，第 ${i+1} 块`);
-    button.onclick=()=>{selected.push(i);render();};return button;
+    button.onclick=()=>{selected.push(i);feedback=null;render();};return button;
   }));
   $('#poetry-submit').disabled=solved || selected.length!==length;
   $('#poetry-clear').disabled=solved || !selected.length;
   $('#poetry-next').hidden=!!room && room.playerId!==room.state.hostId;
   $('#poetry-reveal').hidden=!!room;
-  $('#poetry-status').textContent=solved ? (room ? `${room.state.players.find(p=>p.id===room.state.winner)?.name || '玩家'} 已答对！${room.state.revealedAnswer}` : '此句已解，继续下一题吧。') : '依次点选汉字，组成一句诗。点上方的字可撤回。';
+  $('#poetry-status').textContent=solved ? (room ? `${room.state.players.find(p=>p.id===room.state.winner)?.name || '玩家'} 已答对！${room.state.revealedAnswer}` : '此句已解，继续下一题吧。') : feedback && question.tier==='advanced' ? '还没拼对。绿色：目标句中有；灰色：没有或数量超出。颜色不表示位置正确。' : '依次点选汉字，组成一句诗。点上方的字可撤回。';
   $('#poetry-source').textContent=solved ? (room ? `${question.author}《${question.title}》` : `${question.answer} —— ${question.author}《${question.title}》`) : '';
 }
-$('#poetry-clear').onclick=()=>{selected=[];render();};
+$('#poetry-clear').onclick=()=>{selected=[];feedback=null;render();};
 $('#poetry-next').onclick=next;
 $('#poetry-reveal').onclick=()=>{solved=true;render();};
 $('#poetry-submit').onclick=async()=>{
@@ -80,5 +85,6 @@ $('#poetry-submit').onclick=async()=>{
   if(act) { await act({type:'poetry_guess',guess}); return; }
   const match=question.answers.find(a=>a.line===guess);
   if(match) {solved=true; question={...question,answer:guess,title:match.title,author:match.author};render();}
+  else if(question.tier==='advanced') { feedback={guess,present:guessMembership(question.answer,guess)};render(); }
   else $('#poetry-status').textContent='还没拼对，试着调整字的顺序。';
 };

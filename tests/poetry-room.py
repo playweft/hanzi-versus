@@ -19,6 +19,18 @@ assert(state.winner=="guest" and state.poetry.title=="静夜思")
 assert(not on_action(state,{type="poetry_guess",guess="床前明月光"},ctx("host",6)).accepted)
 assert(on_action(state,{type="start_poetry",question=q},ctx("host",7)).accepted)
 assert(state.round==2 and state.winner==nil and state.poetry.title==nil)
+q.tier="advanced"
+assert(on_action(state,{type="start_poetry",question=q},ctx("host",8)).accepted)
+assert(on_action(state,{type="poetry_guess",guess="前床明山雨"},ctx("guest",9)).accepted)
+local guest=view(state,{}, {viewer={id="guest"}}).state
+local host=view(state,{}, {viewer={id="host"}}).state
+assert(guest.poetryFeedback.guess=="前床明山雨")
+assert(guest.poetryFeedback.present[1] and guest.poetryFeedback.present[2] and guest.poetryFeedback.present[3])
+assert(guest.poetryFeedback.present[4]==false and guest.poetryFeedback.present[5]==false)
+assert(host.poetryFeedback==nil and guest.answer==nil)
+assert(state.phase=="poetry_guessing" and state.winner==nil)
+assert(on_action(state,{type="start_poetry",question=q},ctx("host",10)).accepted)
+assert(view(state,{}, {viewer={id="guest"}}).state.poetryFeedback==nil)
 local idiom=setup({players=players,match={ownerId="host"}}).state
 assert(on_action(idiom,{type="start_game",answer="画蛇添足"},ctx("host",1)).accepted)
 assert(on_action(idiom,{type="set_hint",hint="多余"},ctx("host",2)).accepted)
