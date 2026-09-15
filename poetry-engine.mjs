@@ -21,37 +21,46 @@ function countsOf(chars) {
   return counts;
 }
 // Search all useful extra-character multisets (at most five extra tiles).
-// Maximize total source coverage, then prefer missing characters in the last three positions.
-export function chooseExtras(answer, lines, count, random = Math.random, pad = true) {
-  const base = countsOf(answer);
+// Maximize coverage in source order; weight equal solutions toward later missing positions.
+export function chooseExtras(answer, lines, count, random = Math.random, pad = true, fixed = []) {
+  const base = countsOf([...answer, ...fixed]);
   const targets = lines.map(countsOf);
-  if (lines.some(line => overlap(answer, line) === line.length)) return null;
+  if (lines.some(line => overlap([...answer, ...fixed], line) === line.length)) return null;
   const needs = new Map();
   for (const target of targets) for (const [c, n] of target) {
     needs.set(c, Math.max(needs.get(c) || 0, n - (base.get(c) || 0)));
   }
   const dimensions = [...needs].filter(([, n]) => n > 0);
   const board = new Map(base);
-  let best, bestCoverage = -1, bestTail = -1, ties = 0;
-  const extras = [];
+  let best, bestScore, totalWeight = 0;
+  const extras = [...fixed];
   function visit(index) {
     if (index === dimensions.length) {
-      let coverage = 0, tail = 0;
+      const score = [];
+      let weight = 1;
       for (let i = 0; i < lines.length; i++) {
         let missing = 0;
-        const suffix = countsOf(lines[i].slice(-3));
         for (const [c, n] of targets[i]) {
           const deficit = Math.max(0, n - (board.get(c) || 0));
           missing += deficit;
-          tail += Math.min(deficit, suffix.get(c) || 0);
+          if (deficit) {
+            // Sum weights of all indistinguishable positional omissions for repeated characters.
+            const ways = Array(deficit + 1).fill(0); ways[0] = 1;
+            [...lines[i]].forEach((char, position) => {
+              if (char === c) for (let k = deficit; k > 0; k--) ways[k] += ways[k - 1] * 2 ** position;
+            });
+            weight *= ways[deficit];
+          }
         }
         if (!missing) return;
-        coverage += lines[i].length - missing;
+        score.push(lines[i].length - missing);
       }
-      if (coverage > bestCoverage || (coverage === bestCoverage && tail > bestTail)) {
-        bestCoverage = coverage; bestTail = tail; ties = 0;
-      } else if (coverage !== bestCoverage || tail !== bestTail) return;
-      if (random() < 1 / ++ties) best = [...extras];
+      const difference = bestScore ? score.findIndex((value, i) => value !== bestScore[i]) : -1;
+      if (!bestScore || (difference >= 0 && score[difference] > bestScore[difference])) {
+        bestScore = score; totalWeight = 0;
+      } else if (difference >= 0) return;
+      totalWeight += weight;
+      if (random() < weight / totalWeight) best = [...extras];
       return;
     }
     const [c, need] = dimensions[index];
@@ -83,22 +92,25 @@ export function chooseExtras(answer, lines, count, random = Math.random, pad = t
 export function selectDistractors(answer, candidates, count, random = Math.random) {
   const first = candidates[0];
   if (!first) throw new Error('没有足够的干扰诗句');
-  let sources = candidates.slice(0, random() < .5 ? 1 : 2);
+  let sources = [first];
   let useful = chooseExtras(answer, sources.map(s => s.line), count, random, false);
   if (!useful) throw new Error('无法生成干扰字');
+  const primaryCoverage = overlap(first.line, [...answer, ...useful]);
+  const primaryExtras = [...useful];
   if (useful.length < count) {
     // Candidates are ordered by overlap; preserve the strongest source and
     // prefer the first pair that can use every extra slot meaningfully.
     for (const candidate of candidates.slice(1)) {
       if (candidate.line === first.line || candidate.poem?.id === first.poem?.id) continue;
       const pair = [first, candidate];
-      const trial = chooseExtras(answer, pair.map(s => s.line), count, random, false);
-      if (trial && trial.length > useful.length) { sources = pair; useful = trial; }
+      const trial = chooseExtras(answer, pair.map(s => s.line), count, random, false, primaryExtras);
+      if (trial && overlap(first.line, [...answer, ...trial]) === primaryCoverage
+          && trial.length > useful.length) { sources = pair; useful = trial; }
       if (useful.length === count) break;
     }
   }
   const extras = useful.length === count ? useful
-    : chooseExtras(answer, sources.map(s => s.line), count, random);
+    : chooseExtras(answer, sources.map(s => s.line), count, random, true, useful);
   if (!extras) throw new Error('无法生成不完整覆盖干扰诗句的字块');
   return { sources, extras };
 }
@@ -114,17 +126,25 @@ export function pickPoem(poems, random = Math.random, previousId) {
   const choices = differentAuthors.length ? differentAuthors : pool.filter(p => p.id !== previousId);
   return choices[Math.floor(random() * choices.length)] || pool[0];
 }
+// School tiers proxy familiarity. Every tied line remains eligible (weights 4:2:1).
+export const FAMILIARITY_WEIGHTS = { basic: 4, normal: 2, advanced: 1 };
+export function rankDistractors(candidates, random = Math.random) {
+  return candidates.map(candidate => ({ candidate,
+    key: -Math.log(Math.max(Number.MIN_VALUE, 1 - random()))
+      / (FAMILIARITY_WEIGHTS[candidate.poem.tier] ?? 1)
+  })).sort((a, b) => b.candidate.score - a.candidate.score || a.key - b.key)
+    .map(item => item.candidate);
+}
 export function makeQuestion(poems, random = Math.random, previousId) {
   const poem = pickPoem(poems, random, previousId);
   if (!poem?.lines?.length) throw new Error('诗词题库为空');
   const answer = poem.lines[Math.floor(random() * poem.lines.length)];
   const extraCount = answer.length === 5 ? 4 : 5;
-  // Each other poem contributes its most overlapping line; randomize ties.
-  const candidates = shuffle(poems.filter(p => p.id !== poem.id), random).map(p => {
-    const lines = shuffle(p.lines.filter(line => line !== answer && line.length === answer.length && overlap(answer, line) < line.length), random);
-    lines.sort((a, b) => overlap(answer, b) - overlap(answer, a));
-    return { poem: p, line: lines[0], score: overlap(answer, lines[0] || '') };
-  }).filter(p => p.line).sort((a, b) => b.score - a.score);
+  // Rank all eligible lines, so each tied line receives its own weighted chance.
+  const candidates = rankDistractors(poems.filter(p => p.id !== poem.id).flatMap(p =>
+    p.lines.filter(line => line.length === answer.length && overlap(answer, line) < line.length)
+      .map(line => ({ poem: p, line, score: overlap(answer, line) }))
+  ), random);
   if (!candidates.length) throw new Error('没有足够的干扰诗句');
   const { sources, extras } = selectDistractors(answer, candidates, extraCount, random);
   return { poemId: poem.id, tier: poem.tier || 'basic', answer, title: poem.title, author: poem.author,

@@ -50,14 +50,15 @@ footer { margin-top: auto; padding-top: 2px; color: #adb0aa; text-align: center;
 .start-icon { margin-bottom: 28px; }
 .start-screen h1 { font-size: 38px; }
 .start-description { margin: 20px 0 32px; color: #7c827a; font-size: 16px; line-height: 1.9; }
-.start-screen button { width: min(100%, 280px); }
+
 .start-status { color: #90958d; font-size: 13px; line-height: 1.6; }
 button:focus-visible { outline: 3px solid #123d3b; outline-offset: 4px; }
 
 .mode-options { border: 0; padding: 0; margin: 0 0 24px; width: min(100%, 340px); display: grid; gap: 12px; text-align: left; }
-.mode-options label { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #d5ded2; border-radius: 14px; cursor: pointer; background: #fff9; }
-.mode-options label:has(:checked) { border-color: #4e7f56; background: #edf4e9; }
-.mode-options input { flex: none; width: 18px; height: 18px; accent-color: #4e7f56; }
+.mode-options button { width: 100%; padding: 18px 20px; border: 1px solid #d5ded2; border-radius: 14px; background: #edf4e9; color: #345b3b; text-align: left; box-shadow: none; }
+.mode-options button:hover:not(:disabled) { background: #e3eddf; border-color: #6c9970; transform: none; box-shadow: none; }
+.mode-options button:active:not(:disabled) { background: #d9e7d4; transform: none; }
+.mode-options strong { font-size: 19px; }
 .mode-options strong, .mode-options small { display: block; }
 .mode-options small { margin-top: 6px; color: #7c827a; line-height: 1.5; }
 .poetry-card { padding: 20px 18px 18px; }
