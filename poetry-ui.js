@@ -40,7 +40,7 @@ export function renderPoetryRoom(state, playerId) {
 }
 function render() {
   if (!question) return;
-  $('#poetry-round').textContent = `第 ${round} 题 · ${{basic:"基础",normal:"普通",advanced:"进阶"}[question.tier] || "基础"} · ${question.tiles.length} 选 ${question.length || question.answer.length}`;
+  $('#poetry-round').textContent = `第 ${round} 题 · ${{basic:"入门",normal:"普通",advanced:"进阶"}[question.tier] || "入门"} · ${question.tiles.length} 选 ${question.length || question.answer.length}`;
   const length = question.length || question.answer.length;
   if (solved) {
     const answer = room ? room.state.revealedAnswer : question.answer;

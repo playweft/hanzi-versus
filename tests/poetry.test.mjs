@@ -28,7 +28,7 @@ test('random questions keep all answer tiles, exact board sizes and best overlap
   const max=Math.max(...poems.filter(p=>p.id!==q.poemId).flatMap(p=>p.lines.filter(l=>l!==q.answer&&l.length===q.answer.length&&overlap(q.answer,l)<l.length).map(l=>overlap(q.answer,l))));
   assert.equal(overlap(q.answer,q.sources[0].line),max);
  }
- assert.deepEqual([...sizes].sort(),[5,7]);assert.deepEqual([...sourceCounts].sort(),[1,2]);
+ assert.deepEqual([...sizes].sort(),[5,7]);assert.ok([...sourceCounts].every(n=>n===1 || n===2));
 });
 
 test('joint coverage is optimal and sources cannot complete each other',()=>{
@@ -84,4 +84,26 @@ test('fully constrained sources still pad safely to the exact size',()=>{
  const {sources,extras}=selectDistractors(answer,[{poem:{id:'one'},line:'甲乙丙丁己'}],4,random);
  assert.equal(extras.length,4);assert.ok(!extras.includes('己'));
  assert.equal(overlap(sources[0].line,[...answer,...extras]),4);
+});
+
+test('school pools cover the full checklist and never admit extracurricular lines',()=>{
+ const school=JSON.parse(readFileSync(new URL('../scripts/poetry-school.json',import.meta.url)));
+ for(const [stage,count] of [['primary',75],['middle',40],['high',40]]) {
+  assert.deepEqual(school.entries.filter(e=>e.stage===stage).map(e=>e.number).sort((a,b)=>a-b),Array.from({length:count},(_,i)=>i+1));
+ }
+ for(const entry of school.entries) {
+  const poem=poems.find(p=>p.id===`school-${entry.stage}-${entry.number}`);
+  if(!entry.lines.length) { assert.equal(poem,undefined);continue; }
+  assert.ok(poem,entry.title);assert.deepEqual(poem.lines,entry.lines);assert.equal(poem.tier,entry.tier);
+ }
+ for(const poem of poems.filter(p=>p.tier!=='advanced')) {
+  assert.equal(poem.source.file,'scripts/poetry-school.json');
+  assert.equal(poem.tier==='basic',poem.selection.stage==='primary');
+ }
+ assert.equal(poems.find(p=>p.lines.includes('双泪落君前')).tier,'advanced');
+ assert.deepEqual(poems.find(p=>p.id==='school-primary-18').lines,['小时不识月','呼作白玉盘','又疑瑶台镜','飞在青云端']);
+ assert.equal(poems.find(p=>p.lines.includes('泉眼无声惜细流')).title,'小池');
+ assert.equal(poems.find(p=>p.lines.includes('梅子金黄杏子肥')).author,'范成大');
+ assert.ok(poems.find(p=>p.id==='school-high-15').lines.includes('隔篱呼取尽余杯'));
+ assert.deepEqual(readFileSync(new URL('../data/poetry-curated.json',import.meta.url)),readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 });

@@ -79,10 +79,11 @@
       <header class="game-header"><div><p class="eyebrow">HANZI VERSUS</p><h1>拾字成诗</h1></div><button class="quiet-button" onclick="location.reload()">返回首页</button></header>
       <p id="poetry-round" class="eyebrow"></p>
       <p id="poetry-status" class="status" aria-live="polite">正在整理诗笺…</p>
-      <section class="content-card poetry-card" aria-label="拼出诗句">
+      <section class="content-card poetry-card" aria-labelledby="poetry-title">
+        <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span><div><h2 id="poetry-title">拼出诗句</h2><p>从下方选字，依次填入：</p></div></div>
         <div id="poetry-slots" class="poetry-slots"></div>
         <div id="poetry-tiles" class="poetry-tiles"></div>
-        <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit" disabled>成句</button></div>
+        <div class="poetry-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit" disabled>提交</button></div>
       </section>
       <p id="poetry-source" class="poetry-source" aria-live="polite"></p>
       <div class="poetry-actions"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button id="poetry-next">下一题</button></div>

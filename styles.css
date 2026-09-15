@@ -24,7 +24,7 @@ h1 { margin: 0; font-family: "Songti SC", "STSong", serif; font-size: 30px; lett
 .card-heading h2 { margin: 0; font-size: 17px; line-height: 1.4; }
 .card-heading p { margin: 2px 0 0; color: #a0a39d; font-size: 13px; }
 .hint-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0 22px; }
-.hint-tile { min-height: 64px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(145deg, #f2f7ef, #eaf2e7); color: #22251f; font-family: "Kaiti SC", "STKaiti", "Songti SC", serif; font-size: 21px; font-weight: 700; letter-spacing: .12em; text-indent: .12em; }
+.hint-tile, .poetry-tile { min-height: 64px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(145deg, #f2f7ef, #eaf2e7); color: #22251f; font-family: "Kaiti SC", "STKaiti", "Songti SC", serif; font-size: 21px; font-weight: 700; letter-spacing: .12em; text-indent: .12em; }
 .hint-tile.current { box-shadow: inset 0 0 0 1px rgba(91, 137, 91, .12); animation: hint-in .35s ease-out; }
 .guess-form { margin-top: 2px; }
 .guess-row { display: flex; gap: 10px; }
@@ -60,13 +60,17 @@ button:focus-visible { outline: 3px solid #123d3b; outline-offset: 4px; }
 .mode-options input { flex: none; width: 18px; height: 18px; accent-color: #4e7f56; }
 .mode-options strong, .mode-options small { display: block; }
 .mode-options small { margin-top: 6px; color: #7c827a; line-height: 1.5; }
-.poetry-card { padding: 24px 16px; }
-.poetry-slots { display: grid; grid-template-columns: repeat(var(--letters, 5), minmax(0, 1fr)); gap: 5px; margin-bottom: 28px; }
-.poetry-slot { padding: 0; min-width: 0; min-height: 48px; border-radius: 5px; background: #e7eddf; color: #234c39; box-shadow: none; font-family: serif; font-size: 24px; border-bottom: 2px solid #7d9b71; }
+.poetry-card { padding: 20px 18px 18px; }
+.poetry-slots { display: grid; grid-template-columns: repeat(var(--letters, 5), minmax(0, 1fr)); gap: 5px; margin: 16px 0 22px; }
+.poetry-slot { padding: 0; min-width: 0; min-height: 48px; border: 1px solid #d3d3cf; border-radius: 10px; background: rgba(255,255,255,.78); color: #242720; box-shadow: none; font-family: "Kaiti SC", "STKaiti", "Songti SC", serif; font-size: 21px; }
 .poetry-slot:disabled { opacity: 1; }
-.poetry-tiles { display: grid; grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
-.poetry-tile { min-width: 0; height: 64px; padding: 0; background: #fffaf0; color: #363c2b; border: 1px solid #e5dbc6; box-shadow: 0 3px 0 #e5dbc6; font-family: "Songti SC", serif; font-size: 28px; }
-.poetry-tile:disabled { opacity: .3; }
-.poetry-actions { display: flex; gap: 12px; justify-content: space-between; }
-.quiet-button { background: transparent; color: #63775b; box-shadow: none; border: 1px solid #ccd7c7; }
-.poetry-source { min-height: 48px; text-align: center; color: #4e7f56; line-height: 1.8; }
+.poetry-tiles { display: grid; grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+.poetry-tile { min-width: 0; height: 64px; padding: 0; border: 0; box-shadow: none; letter-spacing: 0; text-indent: 0; }
+.poetry-tile:disabled { opacity: .38; }
+.poetry-actions { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.quiet-button { min-width: 0; padding: 0 8px; background: transparent; color: #7c827a; box-shadow: none; border: 0; font-weight: 400; font-size: 13px; }
+.poetry-tile:hover:not(:disabled), .poetry-slot:hover:not(:disabled), .quiet-button:hover:not(:disabled) { transform: none; box-shadow: none; background-color: #edf3e9; }
+.poetry-tile:active:not(:disabled), .poetry-slot:active:not(:disabled), .quiet-button:active:not(:disabled) { transform: none; }
+.poetry-source { min-height: 20px; margin: 0 5px; color: #7c827a; font-size: 13px; line-height: 1.8; }
+#poetry-round { color: #90958d; font-size: 12px; font-weight: 400; letter-spacing: 0; margin: 0 5px; }
+@media (max-width: 390px) { .poetry-card { padding-inline: 16px; } .poetry-tiles { gap: 9px; } .poetry-tile { min-height: 60px; height: 60px; font-size: 19px; } }

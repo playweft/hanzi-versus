@@ -75,6 +75,26 @@ if issues: (base/'scripts/poetry-selection-issues.txt').write_text(report+'\n')
 else: (base/'scripts/poetry-selection-issues.txt').unlink(missing_ok=True)
 if issues:
  print(report); print('未写入题库：请先解决上述匹配问题');sys.exit(1)
+# School membership is an explicit line whitelist, never inferred from an author/title.
+school=json.loads((base/'scripts/poetry-school.json').read_text())
+entries=school['entries']
+for stage,count in [('primary',75),('middle',40),('high',40)]:
+ numbers=[e['number'] for e in entries if e['stage']==stage]
+ if sorted(numbers)!=list(range(1,count+1)): raise ValueError(f'课标目录缺项或重复: {stage}')
+schoolPoems=[]
+for entry in entries:
+ if not entry['lines']: continue
+ if len(entry['lines'])!=len(set(entry['lines'])): raise ValueError(f'课标选句重复: {entry["title"]}')
+ schoolPoems.append(dict(id=f"school-{entry['stage']}-{entry['number']}",
+  title=entry['title'],author=entry['author'],kind='古诗词',lines=entry['lines'],tier=entry['tier'],
+  selection={'basis':school['sources']['primaryMiddleStandard' if entry['stage']!='high' else 'highStandard'],
+   'mode':'school-selected-lines','anchor':entry['lines'][0],'review':entry['selectionNote'],
+   'stage':entry['stage'],'number':entry['number']},
+  source={'file':'scripts/poetry-school.json','url':school['sources']['compilation'],'title':entry['title']}))
+for poem in result:
+ poem['tier']='advanced'
+ poem['selection']['basis']='课外或课标白名单之外的选句，仅进阶；'+poem['selection']['basis']
+result=schoolPoems+result
 # Drop duplicate lines across works, including competing attributions; first reviewed source wins.
 seenLines=set()
 for poem in result:
@@ -86,14 +106,19 @@ summary={tier:{'poems':sum(p['tier']==tier for p in result),'lines':sum(len(p['l
 for out in [base/'data',base/'public/data']:
  (out/'poetry-curated.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
  (out/'poetry-README.md').write_text(f'''# 拾字成诗：熟悉诗句精选库
-共 {len(result)} 首作品，{sum(len(p['lines']) for p in result)} 个候选句。
+共 {len(result)} 条作品分层记录（同一作品可有不同层的选句），{sum(len(p['lines']) for p in result)} 个候选句。
 原文：https://github.com/chinese-poetry/chinese-poetry ，版本 {commit}。
-分层：{json.dumps(summary,ensure_ascii=False)}。默认基础45%、普通45%、进阶10%，各层先抽作品再抽句子。
-选篇：scripts/poetry-selection.txt 为基础选单，scripts/poetry-expansion.json 为《唐诗三百首》《千家诗》逐篇复核的扩展选单，scripts/poetry-restored.json 保存通行文本与核对网址。优先常见短诗、长篇名句，逐句匹配原文。不是某一教材的完整篇目表，也不是对人群熟悉度的统计结论。
+分层：{json.dumps(summary,ensure_ascii=False)}。默认入门45%、普通45%、进阶10%，各层先抽作品再抽句子。
+选篇：scripts/poetry-school.json 为课标篇目及逐句白名单，小学入门，初高中普通，个别生僻高中篇目进阶。课标共155项，非五七字篇目保留在清单但不出题。scripts/poetry-selection.txt 为课外选单，scripts/poetry-expansion.json 为《唐诗三百首》《千家诗》逐篇复核的扩展选单，scripts/poetry-restored.json 保存通行文本与核对网址。课标白名单优先去重，旧选单仅供进阶。不是某一教材的完整篇目表，也不是对人群熟悉度的统计结论。
 每条作品保留源文件、数组位置、原标题、匹配锚点与选句依据；不使用作者或词牌的模糊匹配，不使用搜索排名。
 常见短诗只保留源文中完整五言七言句，长篇只取明确列出的句子；原文不匹配时构建失败，禁止静默补入或漏项。
 仍可能因古籍异文或个体积累而感到陌生，后续可按真实答题反馈调整。源数据 MIT 许可证见 poetry-LICENSE.txt。
 重建：python scripts/build-curated-poetry.py /path/to/chinese-poetry（需要 opencc-python-reimplemented）。
 ''')
+# Human-readable, complete checklist including excluded entries.
+rows=['# 课标诗词篇目与游戏选句', '', '来源：'+school['sources']['compilation'], '', *school['notes'], '', '| 学段 | 编号 | 作者 | 篇目 | 题池 | 选句 |', '| --- | --- | --- | --- | --- | --- |']
+for e in entries:
+ rows.append('| '+ ' | '.join([{'primary':'小学','middle':'初中','high':'高中'}[e['stage']],str(e['number']),e['author'],e['title'],{'basic':'入门','normal':'普通','advanced':'进阶'}[e['tier']] if e['lines'] else '不出题','；'.join(e['lines']) or e['selectionNote']])+' |')
+(base/'data/poetry-school-list.md').write_text('\n'.join(rows)+'\n')
 print(summary)
 print(f'{len(result)} 首 / {sum(len(p["lines"]) for p in result)} 句')
