@@ -91,7 +91,16 @@
       <h1>拾字成诗</h1>
     </header>
     <div class="game-content">
-      <p id="poetry-round" class="eyebrow"></p>
+      <div class="poetry-toolbar">
+        <p id="poetry-round" class="eyebrow"></p>
+        <button id="poetry-reveal" class="icon-button" type="button" aria-label="揭晓诗句" title="长按揭晓诗句">
+          <svg class="icon-button-ring" viewBox="0 0 48 48" aria-hidden="true">
+            <circle class="icon-button-ring-track" cx="24" cy="24" r="22" />
+            <circle class="icon-button-ring-fill" data-hold-fill cx="24" cy="24" r="22" />
+          </svg>
+          <svg class="icon-button-glyph" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4v16" /><path d="M6.029 4.285A2 2 0 0 0 3 6v12a2 2 0 0 0 3.029 1.715l9.997-5.998a2 2 0 0 0 .003-3.432z" /></svg>
+        </button>
+      </div>
       <p id="poetry-match" class="poetry-match" hidden></p>
       <p id="poetry-announcement" class="sr-only" role="status" aria-live="polite"></p>
       <p id="poetry-toast" class="poetry-toast" hidden></p>
@@ -109,8 +118,7 @@
         <div class="poetry-actions poetry-edit-actions"><button id="poetry-clear" class="quiet-button">清空</button><button id="poetry-submit"
             disabled>提交</button></div>
       </section>
-      <div class="poetry-actions poetry-navigation"><button id="poetry-reveal" class="quiet-button">揭晓诗句</button><button
-          id="poetry-next" class="quiet-button">跳过</button></div>
+      <div class="poetry-actions poetry-navigation"><button id="poetry-next" class="quiet-button">跳过</button></div>
     </div>
   </main>
   <script type="module" src="./src/main.js"></script>

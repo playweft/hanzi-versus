@@ -55,7 +55,7 @@ export function animatePoetryCompletion(before, moveLetters, commit, onFinish) {
     }
     if(!moveLetters || reduced) settling.push(play(game.querySelector('#poetry-slots'),
       [{opacity:0},{opacity:1}],{duration:reduced?100:180}));
-    for(const el of game.querySelectorAll('#poetry-source, #poetry-review, #poetry-title, .poetry-navigation')) {
+    for(const el of [...game.querySelectorAll('#poetry-source, #poetry-review, #poetry-title, .poetry-toolbar, .poetry-navigation')].filter(el=>!el.hidden)) {
       settling.push(play(el,[{opacity:0},{opacity:1}],{duration:reduced?100:160,delay:reduced?0:100}));
     }
     Promise.allSettled(settling.map(a=>a.finished)).then(finish);
@@ -82,7 +82,7 @@ export function animatePoetryNext(commit, onFinish) {
   function play(el, frames, options) {
     const a=el.animate(frames,{fill:'both',...options});animations.push(a);return a;
   }
-  const content=()=>[...card.children,game.querySelector('.poetry-navigation'),game.querySelector('#poetry-round')].filter(el=>!el.hidden);
+  const content=()=>[...card.children,game.querySelector('.poetry-navigation'),game.querySelector('.poetry-toolbar')].filter(el=>!el.hidden);
   const before=card.getBoundingClientRect();
   const margin=getComputedStyle(card).marginTop;
   game.inert=true;

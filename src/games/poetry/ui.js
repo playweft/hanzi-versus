@@ -1,5 +1,6 @@
 import { capturePoetryCard, animatePoetryCompletion, animatePoetryNext } from './transition.mjs';
 import { makeQuestion, validAnswers, guessMembership } from './engine.mjs';
+import { holdToConfirm } from '../../hold-confirm.mjs';
 const $ = s => document.querySelector(s);
 let poems, question, selected = [], solved = false, round = 0, room, act, busy = false, feedback = null, reviewing = false, revealed = false;
 let toastTimer, submitting = false;
@@ -142,12 +143,17 @@ function renderContent() {
   $('#poetry-next').classList.toggle('quiet-button', !solved);
   $('#poetry-next').hidden=room ? room.playerId!==room.state.hostId : !solved;
   $('#poetry-reveal').hidden=!!room || solved;
+  $('#poetry-next').closest('.poetry-navigation').hidden=$('#poetry-next').hidden;
   $('#poetry-source').textContent=solved ? (room ? `${question.author}《${question.title}》` : `${question.author} ·《${question.title}》`) : '';
 }
 $('#poetry-review').onclick=()=>{reviewing=!reviewing;render();};
 $('#poetry-clear').onclick=()=>{selected=[];feedback=null;render();};
 $('#poetry-next').onclick=next;
-$('#poetry-reveal').onclick=()=>{revealed=true;solved=true;render();};
+// Revealing forfeits the question, so it takes a deliberate hold. Keyboard and
+// assistive activation confirm straight away instead of faking the gesture.
+holdToConfirm($('#poetry-reveal'),{
+  onConfirm:()=>{ if (!question || solved || room || finishTransition) return; revealed=true; solved=true; render(); },
+});
 $('#poetry-submit').onclick=async()=>{
   if(submitting || solved || !question || finishTransition) return;
   const guess=selected.map(i=>question.tiles[i]).join('');

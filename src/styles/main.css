@@ -484,11 +484,98 @@ button:focus-visible {
   overflow-wrap: anywhere;
 }
 #poetry-round {
-  margin: 2px 5px -8px;
+  margin: 0;
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.03em;
   color: #687065;
+}
+.poetry-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 5px;
+}
+#poetry-game .icon-button {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #345b3b;
+  box-shadow: none;
+  transform: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none; /* Safari-only; no-op on Android */
+  -webkit-user-select: none;
+  transition: background-color 0.18s ease;
+}
+/* The ring only exists while the gesture is live, so the resting control stays
+   a plain icon. */
+#poetry-game .icon-button-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* start the sweep at 12 o'clock */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+#poetry-game .icon-button.is-holding {
+  background-color: #e9f1e5;
+}
+#poetry-game .icon-button.is-holding .icon-button-ring {
+  opacity: 1;
+}
+#poetry-game .icon-button-ring-track,
+#poetry-game .icon-button-ring-fill {
+  fill: none;
+  stroke-width: 2;
+}
+#poetry-game .icon-button-ring-track {
+  stroke: #d7e3d2;
+}
+#poetry-game .icon-button-ring-fill {
+  stroke: #527f58;
+  stroke-linecap: round;
+}
+#poetry-game .icon-button-glyph {
+  position: relative; /* keep the icon above the absolutely placed ring */
+  /* Keep the button box the only hit target; a long press that lands on a
+     graphic takes the embedder's image/context path instead. */
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+#poetry-game .icon-button:hover,
+#poetry-game .icon-button:active {
+  box-shadow: none;
+  transform: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  #poetry-game .icon-button:hover:not(.is-holding) {
+    background-color: #e3eddf;
+  }
+  #poetry-game .icon-button:active:not(.is-holding) {
+    background-color: #cddfc8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #poetry-game .icon-button {
+    transition: none;
+  }
+  #poetry-game .icon-button-ring {
+    transition: none;
+  }
 }
 @media (max-width: 390px) {
   .poetry-card {
@@ -554,6 +641,7 @@ button:focus-visible {
 /* Poetry uses flat controls and a focused, readable completion state. */
 #poetry-game .game-content {
   gap: 16px;
+  justify-content: center;
 }
 
 #poetry-game .poetry-actions > button {
@@ -574,7 +662,6 @@ button:focus-visible {
   background: #345b3b;
 }
 #poetry-game.is-solved .poetry-card {
-  margin-top: clamp(24px, 6svh, 64px);
   padding: 28px 18px 20px;
 }
 #poetry-game.is-solved .card-heading {
@@ -689,7 +776,6 @@ button:focus-visible {
 }
 @media (max-height: 600px) {
   #poetry-game.is-solved .poetry-card {
-    margin-top: 12px;
     padding-top: 24px;
   }
 }
