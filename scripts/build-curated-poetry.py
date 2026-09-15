@@ -94,7 +94,25 @@ for entry in entries:
 for poem in result:
  poem['tier']='advanced'
  poem['selection']['basis']='课外或课标白名单之外的选句，仅进阶；'+poem['selection']['basis']
-result=schoolPoems+result
+# Familiar supplemental lines have their own explicit tier; never promote a whole work.
+famous=json.loads((base/'scripts/poetry-famous.json').read_text())
+famousPoems=[]
+for entry in famous:
+ source=entry['source']
+ if 'file' in source:
+  original=json.loads((root/source['file']).read_text())[source['index']]
+  sourceLines=[convert(line) for paragraph in original.get('paragraphs',original.get('para',[])) for line in re.split('[，。！？；：、,.!?;:]',paragraph)]
+  if convert(original['author'])!=entry['author'] or convert(original.get('title',original.get('rhythmic','')))!=source['title'] or any(line not in sourceLines for line in entry['lines']):
+   raise ValueError(f'名句补充源文不一致: {entry["title"]}')
+ elif not source.get('url') or not source.get('review'):
+  raise ValueError(f'名句补充缺少异文核对出处: {entry["title"]}')
+ if entry['tier'] not in ['basic','normal'] or not entry['lines'] or len(set(entry['lines']))!=len(entry['lines']):
+  raise ValueError(f'名句补充分层或选句无效: {entry["title"]}')
+ famousPoems.append(dict(id='famous-'+hashlib.sha256((entry['author']+entry['title']).encode()).hexdigest()[:16],
+  author=entry['author'],title=entry['title'],kind='古诗词',lines=entry['lines'],tier=entry['tier'],
+  selection={'basis':entry['basis'],'mode':'famous-selected-lines','anchor':entry['lines'][0],'review':'逐句补充白名单，保留源文或通行异文出处'},
+  source={'file':'scripts/poetry-famous.json','title':entry['title'],'original':source}))
+result=schoolPoems+famousPoems+result
 # Drop duplicate lines across works, including competing attributions; first reviewed source wins.
 seenLines=set()
 for poem in result:
@@ -109,7 +127,7 @@ for out in [base/'data',base/'public/data']:
 共 {len(result)} 条作品分层记录（同一作品可有不同层的选句），{sum(len(p['lines']) for p in result)} 个候选句。
 原文：https://github.com/chinese-poetry/chinese-poetry ，版本 {commit}。
 分层：{json.dumps(summary,ensure_ascii=False)}。默认入门45%、普通45%、进阶10%，各层先抽作品再抽句子。
-选篇：scripts/poetry-school.json 为课标篇目及逐句白名单，小学入门，初高中普通，个别生僻高中篇目进阶。课标共155项，非五七字篇目保留在清单但不出题。scripts/poetry-selection.txt 为课外选单，scripts/poetry-expansion.json 为《唐诗三百首》《千家诗》逐篇复核的扩展选单，scripts/poetry-restored.json 保存通行文本与核对网址。课标白名单优先去重，旧选单仅供进阶。不是某一教材的完整篇目表，也不是对人群熟悉度的统计结论。
+选篇：scripts/poetry-school.json 为课标篇目及逐句白名单，小学入门，初高中普通，个别生僻高中篇目进阶。课标共155项，非五七字篇目保留在清单但不出题。scripts/poetry-selection.txt 为课外选单，scripts/poetry-expansion.json 为《唐诗三百首》《千家诗》逐篇复核的扩展选单，scripts/poetry-restored.json 保存通行文本与核对网址。scripts/poetry-famous.json 为逐句复核的熟悉名句补充白名单，按单句放入入门或普通，不提升整篇。课标、名句补充、旧选单依次去重，旧选单剩余句仅供进阶。不是某一教材的完整篇目表，也不是对人群熟悉度的统计结论。
 每条作品保留源文件、数组位置、原标题、匹配锚点与选句依据；不使用作者或词牌的模糊匹配，不使用搜索排名。
 常见短诗只保留源文中完整五言七言句，长篇只取明确列出的句子；原文不匹配时构建失败，禁止静默补入或漏项。
 仍可能因古籍异文或个体积累而感到陌生，后续可按真实答题反馈调整。源数据 MIT 许可证见 poetry-LICENSE.txt。
@@ -122,3 +140,8 @@ for e in entries:
 (base/'data/poetry-school-list.md').write_text('\n'.join(rows)+'\n')
 print(summary)
 print(f'{len(result)} 首 / {sum(len(p["lines"]) for p in result)} 句')
+
+rows=['# 熟悉名句补充清单', '', '在课标白名单之外按单句补充，分层为编辑判断；不将整篇自动加入普通题池。', '', '| 作者 | 篇目 | 题池 | 选句 | 筛选来源 |', '| --- | --- | --- | --- | --- |']
+for e in famous:
+ rows.append('| '+' | '.join([e['author'],e['title'],{'basic':'入门','normal':'普通'}[e['tier']],'；'.join(e['lines']),('[主题或选集]('+e['discoveryUrl']+')') if e.get('discoveryUrl') else '前期逐句精选'])+' |')
+(base/'data/poetry-famous-list.md').write_text('\n'.join(rows)+'\n')

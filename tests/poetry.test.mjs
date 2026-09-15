@@ -88,7 +88,7 @@ test('fully constrained sources still pad safely to the exact size',()=>{
  assert.equal(overlap(sources[0].line,[...answer,...extras]),4);
 });
 
-test('school pools cover the full checklist and never admit extracurricular lines',()=>{
+test('school and familiar pools admit only explicitly reviewed lines',()=>{
  const school=JSON.parse(readFileSync(new URL('../scripts/poetry-school.json',import.meta.url)));
  for(const [stage,count] of [['primary',75],['middle',40],['high',40]]) {
   assert.deepEqual(school.entries.filter(e=>e.stage===stage).map(e=>e.number).sort((a,b)=>a-b),Array.from({length:count},(_,i)=>i+1));
@@ -98,7 +98,15 @@ test('school pools cover the full checklist and never admit extracurricular line
   if(!entry.lines.length) { assert.equal(poem,undefined);continue; }
   assert.ok(poem,entry.title);assert.deepEqual(poem.lines,entry.lines);assert.equal(poem.tier,entry.tier);
  }
- for(const poem of poems.filter(p=>p.tier!=='advanced')) {
+ const famous=JSON.parse(readFileSync(new URL('../scripts/poetry-famous.json',import.meta.url)));
+ for(const entry of famous) {
+  const poem=poems.find(p=>p.source.file==='scripts/poetry-famous.json' && p.author===entry.author && p.title===entry.title);
+  assert.ok(poem,entry.title);assert.deepEqual(poem.lines,entry.lines);assert.equal(poem.tier,entry.tier);
+  assert.ok(entry.source.file || (entry.source.url && entry.source.review));
+ }
+ for(const line of ['一寸光阴一寸金','读书破万卷','下笔如有神','黑发不知勤学早']) assert.equal(poems.find(p=>p.lines.includes(line))?.tier,'basic',line);
+ for(const line of ['腹有诗书气自华','人生到处知何似','应似飞鸿踏雪泥']) assert.equal(poems.find(p=>p.lines.includes(line))?.tier,'normal',line);
+ for(const poem of poems.filter(p=>p.tier!=='advanced' && p.source.file!=='scripts/poetry-famous.json')) {
   assert.equal(poem.source.file,'scripts/poetry-school.json');
   assert.equal(poem.tier==='basic',poem.selection.stage==='primary');
  }
