@@ -9,7 +9,7 @@ function emitPlayweftPackage(base, outDir) {
     "game.lua",
     "icon.svg",
     "data/README.md",
-    "data/poetry-top1000.json",
+    "data/poetry-curated.json",
     "data/poetry-README.md",
     "data/poetry-LICENSE.txt",
     "data/idioms_top4500.txt",

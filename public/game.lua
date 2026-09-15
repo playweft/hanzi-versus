@@ -107,7 +107,7 @@ function on_action(state, action, context)
     state.gameType = "poetry"
     state.round = state.round + 1
     state.phase = "poetry_guessing"
-    state.poetry = { id = tostring(context.actionAt) .. ":" .. tostring(state.round), tiles = q.tiles, length = size }
+    state.poetry = { id = tostring(context.actionAt) .. ":" .. tostring(state.round), tiles = q.tiles, length = size, tier = (q.tier == "normal" or q.tier == "advanced") and q.tier or "basic" }
     state.poetryAnswers = q.answers
     state.answer = q.answer
     state.poetryTitle = q.title

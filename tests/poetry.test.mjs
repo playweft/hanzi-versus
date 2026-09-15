@@ -1,17 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { makeQuestion, overlap, trimLine, validAnswers } from '../poetry-engine.mjs';
-const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-top1000.json',import.meta.url)));
+import { makeQuestion, pickPoem, overlap, chooseExtras, validAnswers } from '../poetry-engine.mjs';
+const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 let seed=42;
 const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
-test('top K contains valid distinct poems with descending scores',()=>{
- assert.equal(poems.length,1000);assert.equal(new Set(poems.map(p=>p.id)).size,1000);
- poems.forEach((p,i)=>{assert.ok(p.lines.length);assert.ok(p.lines.every(l=>/^(?:[\u3400-\u9fff]{5}|[\u3400-\u9fff]{7})$/.test(l))); if(i)assert.ok(poems[i-1].score>=p.score);});
+test('curated bank contains traceable distinct poems and familiar staples',()=>{
+ assert.ok(poems.length>=300 && poems.length<=500);
+ assert.ok(poems.reduce((n,p)=>n+p.lines.length,0)>=1500);assert.equal(new Set(poems.map(p=>p.id)).size,poems.length);
+ for (const title of ["静夜思","春晓","登鹳雀楼","山居秋暝","登高","夜雨寄北","别董大","游园不值"]) assert.ok(poems.some(p=>p.title===title));
+ poems.forEach((p,i)=>{assert.ok(p.lines.length);assert.ok(p.lines.every(l=>/^(?:[\u3400-\u9fff]{5}|[\u3400-\u9fff]{7})$/.test(l))); assert.ok(p.source.file && p.selection.anchor);assert.equal(p.score,undefined);});
 });
 test('duplicate characters counted as separate tiles; tail removal preferred',()=>{
  assert.equal(overlap('人人人','人人'),2);
- assert.equal(trimLine('一二三四五六七',5,random).slice(0,4).join(''),'一二三四');
+ const extras=chooseExtras('甲乙丙丁戊',['甲己庚辛壬'],4,random);
+ assert.equal(overlap('甲己庚辛壬',[...'甲乙丙丁戊',...extras]),4);
+ assert.ok(extras.includes('己'));
+ assert.equal(chooseExtras('甲乙丙丁戊',['乙甲丙丁戊'],4,random),null);
 });
 test('random questions keep all answer tiles, exact board sizes and best overlap sources',()=>{
  const sizes=new Set();const sourceCounts=new Set();
@@ -19,8 +24,45 @@ test('random questions keep all answer tiles, exact board sizes and best overlap
   const q=makeQuestion(poems,random);sizes.add(q.answer.length);sourceCounts.add(q.sources.length);
   assert.equal(q.tiles.length,q.answer.length===5?9:12);assert.equal(overlap(q.answer,q.tiles),q.answer.length);
   assert.ok(validAnswers(poems,q.tiles,q.answer.length).some(a=>a.line===q.answer));
-  const max=Math.max(...poems.filter(p=>p.id!==q.poemId).flatMap(p=>p.lines.filter(l=>l!==q.answer&&l.length===q.answer.length).map(l=>overlap(q.answer,l))));
+  for(const source of q.sources) assert.ok(overlap(source.line,q.tiles)<source.line.length);
+  const max=Math.max(...poems.filter(p=>p.id!==q.poemId).flatMap(p=>p.lines.filter(l=>l!==q.answer&&l.length===q.answer.length&&overlap(q.answer,l)<l.length).map(l=>overlap(q.answer,l))));
   assert.equal(overlap(q.answer,q.sources[0].line),max);
  }
  assert.deepEqual([...sizes].sort(),[5,7]);assert.deepEqual([...sourceCounts].sort(),[1,2]);
+});
+
+test('joint coverage is optimal and sources cannot complete each other',()=>{
+ const answer='甲乙丙丁戊', lines=['甲乙己庚辛','丙丁己庚壬'];
+ const extras=chooseExtras(answer,lines,4,random);
+ const board=[...answer,...extras];
+ assert.equal(lines.reduce((sum,l)=>sum+overlap(l,board),0),8);
+ lines.forEach(l=>assert.equal(overlap(l,board),4));
+ // Several distinct multisets attain the same optimum; all are valid.
+ assert.ok(extras.includes('己') || extras.includes('庚'));
+});
+test('additional copies of common characters count only when needed',()=>{
+ const answer='甲乙丙丁戊', line='甲甲甲己庚';
+ const extras=chooseExtras(answer,[line],4,random);
+ assert.equal(overlap(line,[...answer,...extras]),4);
+ assert.ok(extras.filter(c=>c==='甲').length>=2);
+});
+
+test('consecutive questions prefer different authors',()=>{
+ const previous=poems[0];
+ for(let i=0;i<20;i++) assert.notEqual(makeQuestion(poems,random,previous.id).author,previous.author);
+});
+
+test('default mix uses tier weights rather than bank sizes',()=>{
+ const counts={basic:0,normal:0,advanced:0};
+ for(let i=0;i<10000;i++) counts[pickPoem(poems,random).tier]++;
+ assert.ok(counts.basic>4200 && counts.basic<4800);
+ assert.ok(counts.normal>4200 && counts.normal<4800);
+ assert.ok(counts.advanced>800 && counts.advanced<1200);
+});
+test('all lines are distinct and restored versions match familiar text',()=>{
+ const lines=poems.flatMap(p=>p.lines);assert.equal(new Set(lines).size,lines.length);
+ assert.ok(lines.includes('千里黄云白日曛'));assert.ok(lines.includes('应怜屐齿印苍苔'));
+ assert.ok(poems.every(p=>['basic','normal','advanced'].includes(p.tier)));
+ const only=poems.filter(p=>p.tier==='normal');
+ assert.equal(pickPoem(only,random).tier,'normal');
 });

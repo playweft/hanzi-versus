@@ -3,7 +3,7 @@ const $ = s => document.querySelector(s);
 let poems, question, selected = [], solved = false, round = 0, room, act, busy = false;
 export async function loadPoetry() {
   if (!poems) {
-    const response = await fetch('./data/poetry-top1000.json');
+    const response = await fetch('./data/poetry-curated.json');
     if (!response.ok) throw new Error('诗词题库加载失败，请重试');
     poems = await response.json();
   }
@@ -40,7 +40,7 @@ export function renderPoetryRoom(state, playerId) {
 }
 function render() {
   if (!question) return;
-  $('#poetry-round').textContent = `第 ${round} 题 · ${question.tiles.length} 选 ${question.length || question.answer.length}`;
+  $('#poetry-round').textContent = `第 ${round} 题 · ${{basic:"基础",normal:"普通",advanced:"进阶"}[question.tier] || "基础"} · ${question.tiles.length} 选 ${question.length || question.answer.length}`;
   const length = question.length || question.answer.length;
   if (solved) {
     const answer = room ? room.state.revealedAnswer : question.answer;
