@@ -55,7 +55,7 @@ export function animatePoetryCompletion(before, moveLetters, commit, onFinish) {
     }
     if(!moveLetters || reduced) settling.push(play(game.querySelector('#poetry-slots'),
       [{opacity:0},{opacity:1}],{duration:reduced?100:180}));
-    for(const el of [...game.querySelectorAll('#poetry-source, #poetry-review, #poetry-title, .poetry-toolbar, .poetry-navigation')].filter(el=>!el.hidden)) {
+    for(const el of [...game.querySelectorAll('#poetry-source, #poetry-review, #poetry-heading, .poetry-toolbar, .poetry-navigation')].filter(el=>!el.hidden)) {
       settling.push(play(el,[{opacity:0},{opacity:1}],{duration:reduced?100:160,delay:reduced?0:100}));
     }
     Promise.allSettled(settling.map(a=>a.finished)).then(finish);

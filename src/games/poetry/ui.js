@@ -65,7 +65,7 @@ export function renderPoetryRoom(state, playerId) {
   room = {state,playerId};
   if (!state.poetry) return;
   if (question?.id !== state.poetry.id) { selected=[]; feedback=null; reviewing=false; revealed=false; }
-  if (state.poetryFeedback?.guess === selected.map(i=>state.poetry.tiles[i]).join('')) {
+  if (state.poetryFeedback?.guess === guessText()) {
     if (feedback !== state.poetryFeedback) announce('还没拼对。绿色表示目标句中有这个字，灰色表示没有或数量超出，颜色不表示位置。');
     feedback=state.poetryFeedback;
   }
@@ -73,6 +73,13 @@ export function renderPoetryRoom(state, playerId) {
   render();
 }
 let renderedKey, renderedSolved = false, finishTransition = null;
+// Slots are positional: selected[i] holds the tile index placed in slot i, or
+// undefined for a hole. Removing a character leaves the ones after it alone, and
+// the next pick always lands in the first hole.
+function slotCount(){ return question ? (question.length || question.answer.length) : 0; }
+function filled(){ return selected.filter(i=>i!==undefined).length; }
+function complete(){ return filled()===slotCount(); }
+function guessText(){ return selected.map(i=>i===undefined ? '' : question.tiles[i]).join(''); }
 function render() {
   if (!question) return;
   const key = question.id || `${round}:${question.poemId}`;
@@ -93,21 +100,24 @@ function render() {
 function renderContent() {
   if (!question) return;
   $('#poetry-game').classList.toggle('is-solved', solved);
-  $('#poetry-title').textContent = solved ? (revealed ? '本题诗句' : '答对了') : '拼出诗句';
+  $('#poetry-title').textContent = solved ? (revealed ? '本题诗句' : '答对了') : '';
+  $('#poetry-heading').hidden = !solved;
   $('#poetry-tiles').hidden = solved && !reviewing;
   $('#poetry-review').hidden = !solved;
   $('#poetry-review').textContent = reviewing ? '收起字盘' : '查看字盘';
-  $('#poetry-instruction').hidden = solved;
   updateMatch();
   $('#poetry-review').setAttribute('aria-expanded', String(reviewing));
   $('.poetry-edit-actions').hidden = solved;
   $('#poetry-source').hidden = !solved;
-  $('#poetry-round').textContent = `第 ${round} 题 · ${{basic:"入门",normal:"普通",advanced:"进阶"}[question.tier] || "入门"} · ${question.tiles.length} 选 ${question.length || question.answer.length}`;
+  $('#poetry-round').textContent = {basic:"入门",normal:"普通",advanced:"进阶"}[question.tier] || "入门";
   const length = question.length || question.answer.length;
   if (solved) {
     const answer = room ? room.state.revealedAnswer : question.answer;
     const used = new Set();
     selected = [...answer].map(char => { const i = question.tiles.findIndex((c, i) => c === char && !used.has(i)); used.add(i); return i; });
+  } else if (selected.length !== length) {
+    // Keep the slot array exactly as long as the answer; extra entries are holes.
+    selected = Array.from({length}, (_, i) => selected[i]);
   }
   $('#poetry-slots').style.setProperty('--letters', length);
   const slots = $('#poetry-slots');
@@ -126,19 +136,26 @@ function renderContent() {
     }
     button.setAttribute('aria-label',`第 ${i+1} 字${button.textContent ? ' '+button.textContent+(button.title ? '，'+button.title : '')+'，点击撤回' : '，待选'}`);
     button.disabled=solved || selected[i]===undefined;
-    button.onclick=()=>{if(solved)return;selected.splice(i,1);feedback=null;render();};
+    button.onclick=()=>{if(solved)return;selected[i]=undefined;feedback=null;render();};
   }
-  slots.setAttribute('aria-label', solved ? selected.map(i=>question.tiles[i]).join('') : '已选诗句');
+  slots.setAttribute('aria-label', solved ? guessText() : '已选诗句');
   $('#poetry-tiles').style.setProperty('--columns',length===5 ? 3:4);
   $('#poetry-tiles').replaceChildren(...question.tiles.map((char,i)=> {
     const button=document.createElement('button'); button.type='button'; button.className='poetry-tile';
-    if (solved) button.classList.add(selected.includes(i) ? 'review-answer' : 'review-extra');
-    button.textContent=char; button.disabled=solved || selected.includes(i) || selected.length===length;
-    button.setAttribute('aria-label',`${char}，第 ${i+1} 块${solved ? (selected.includes(i) ? '，答案用字' : '，干扰字') : ''}`);
-    button.onclick=()=>{selected.push(i);feedback=null;render();};return button;
+    const placed=selected.includes(i);
+    if (solved) button.classList.add(placed ? 'review-answer' : 'review-extra');
+    else if (placed) button.classList.add('is-used');
+    button.textContent=char; button.disabled=solved || (!placed && complete());
+    button.setAttribute('aria-label',`${char}，第 ${i+1} 块${solved ? (placed ? '，答案用字' : '，干扰字') : placed ? '，已填入，点击撤回' : '，点击填入'}`);
+    button.onclick=()=>{
+      const at=selected.indexOf(i);
+      if(at!==-1) selected[at]=undefined;          // put this exact tile back
+      else { const slot=selected.indexOf(undefined); if(slot===-1) return; selected[slot]=i; }
+      feedback=null;render();
+    };return button;
   }));
-  $('#poetry-submit').disabled=submitting || solved || selected.length!==length;
-  $('#poetry-clear').disabled=solved || !selected.length;
+  $('#poetry-submit').disabled=submitting || solved || !complete();
+  $('#poetry-clear').disabled=solved || !filled();
   $('#poetry-next').textContent=solved ? '下一题' : '跳过';
   $('#poetry-next').classList.toggle('quiet-button', !solved);
   $('#poetry-next').hidden=room ? room.playerId!==room.state.hostId : !solved;
@@ -156,12 +173,12 @@ holdToConfirm($('#poetry-reveal'),{
 });
 $('#poetry-submit').onclick=async()=>{
   if(submitting || solved || !question || finishTransition) return;
-  const guess=selected.map(i=>question.tiles[i]).join('');
+  const guess=guessText();
   if(guess.length!==(question.length || question.answer.length)) return;
   if(act) {
     submitting=true;buttonBusy($('#poetry-submit'),true);
     try { await act({type:'poetry_guess',guess}); }
-    finally { submitting=false;buttonBusy($('#poetry-submit'),false);$('#poetry-submit').disabled=solved || selected.length!==(question.length || question.answer.length); }
+    finally { submitting=false;buttonBusy($('#poetry-submit'),false);$('#poetry-submit').disabled=solved || !complete(); }
     return;
   }
   const match=question.answers.find(a=>a.line===guess);

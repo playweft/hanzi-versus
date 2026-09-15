@@ -402,6 +402,11 @@ button:focus-visible {
   gap: 5px;
   margin: 16px 0 22px;
 }
+/* No heading above the slots while the question is open, so drop the gap it
+   used to sit in. */
+#poetry-game:not(.is-solved) .poetry-slots {
+  margin-top: 0;
+}
 .poetry-slot {
   padding: 0;
   min-width: 0;
@@ -445,6 +450,13 @@ button:focus-visible {
 }
 .poetry-tile:disabled {
   opacity: 0.38;
+}
+/* Placed characters stay dimmed but tappable: tapping one takes it back out.
+   Kept lighter than :disabled and flattened, so a full board still shows which
+   tiles are yours and which are simply out of room. */
+.poetry-tile.is-used {
+  opacity: 0.6;
+  background: #e4eade;
 }
 .poetry-actions {
   display: flex;
@@ -666,9 +678,6 @@ button:focus-visible {
 }
 #poetry-game.is-solved .card-heading {
   justify-content: center;
-}
-#poetry-game.is-solved .heading-icon {
-  display: none;
 }
 #poetry-game.is-solved .card-heading h2 {
   color: #58755b;

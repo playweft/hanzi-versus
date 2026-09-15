@@ -104,12 +104,9 @@
       <p id="poetry-match" class="poetry-match" hidden></p>
       <p id="poetry-announcement" class="sr-only" role="status" aria-live="polite"></p>
       <p id="poetry-toast" class="poetry-toast" hidden></p>
-      <section class="poetry-card" aria-labelledby="poetry-title">
-        <div class="card-heading"><span class="heading-icon hint-icon" aria-hidden="true">💡</span>
-          <div>
-            <h2 id="poetry-title">拼出诗句</h2>
-            <p id="poetry-instruction">依次选字，点击已选字可撤回</p>
-          </div>
+      <section class="poetry-card" aria-labelledby="poetry-title" aria-label="拼出诗句">
+        <div class="card-heading" id="poetry-heading" hidden>
+          <h2 id="poetry-title"></h2>
         </div>
         <div id="poetry-slots" class="poetry-slots"></div>
         <p id="poetry-source" class="poetry-source" aria-live="polite" hidden></p>
