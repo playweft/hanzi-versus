@@ -82,7 +82,7 @@ export function animatePoetryNext(commit, onFinish) {
   function play(el, frames, options) {
     const a=el.animate(frames,{fill:'both',...options});animations.push(a);return a;
   }
-  const content=()=>[...card.children,game.querySelector('.poetry-navigation'),game.querySelector('#poetry-round'),game.querySelector('#poetry-status')].filter(el=>!el.hidden);
+  const content=()=>[...card.children,game.querySelector('.poetry-navigation'),game.querySelector('#poetry-round')].filter(el=>!el.hidden);
   const before=card.getBoundingClientRect();
   const margin=getComputedStyle(card).marginTop;
   game.inert=true;

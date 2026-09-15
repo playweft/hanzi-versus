@@ -2,6 +2,31 @@ import { capturePoetryCard, animatePoetryCompletion, animatePoetryNext } from '.
 import { makeQuestion, validAnswers, guessMembership } from './engine.mjs';
 const $ = s => document.querySelector(s);
 let poems, question, selected = [], solved = false, round = 0, room, act, busy = false, feedback = null, reviewing = false, revealed = false;
+let toastTimer, submitting = false;
+function announce(message) { $('#poetry-announcement').textContent = message; }
+export function showPoetryNotice(message, wrong = false) {
+  announce(message);
+  if (wrong) {
+    const slots = $('#poetry-slots');
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+      slots.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:220});
+    for (const slot of slots.children) slot.animate([{borderColor:'#ce6969'},{borderColor:getComputedStyle(slot).borderColor}],{duration:650});
+    return;
+  }
+  clearTimeout(toastTimer);
+  const toast = $('#poetry-toast');toast.textContent=message;toast.hidden=false;
+  toastTimer=setTimeout(()=>{toast.hidden=true;},4000);
+}
+function buttonBusy(button, pending) {
+  button.setAttribute('aria-busy',String(pending));
+  button.disabled=pending;
+}
+function updateMatch() {
+  const el=$('#poetry-match');el.hidden=!act;
+  if(!act)return;
+  el.textContent=room && solved ? `${room.state.players.find(p=>p.id===room.state.winner)?.name || '玩家'} 已答对 · ${room.playerId===room.state.hostId ? '可开始下一题' : '等待房主开始下一题'}` : question && room ? '双方正在答题' : '等待房主出题…';
+  el.title=el.textContent;
+}
 export async function loadPoetry() {
   if (!poems) {
     const response = await fetch('./data/poetry-curated.json');
@@ -17,26 +42,32 @@ export async function createPoetryQuestion() {
   return q;
 }
 export async function startPoetry(action) {
+  if (!action) await loadPoetry();
   act = action;
+  if (!action) room = null;
   $('#poetry-game').hidden = false;
-  if (action) { $('#poetry-status').textContent = '等待房主出题…'; return; }
+  updateMatch();
+  if (action) return;
   await next();
 }
 async function next() {
   if (busy || finishTransition) return;
   busy = true;
-  $('#poetry-next').disabled = true;
+  buttonBusy($('#poetry-next'),true);
   try {
     if (act) await act({type:'start_poetry', question:await createPoetryQuestion()});
     else { question = await createPoetryQuestion(); round++; selected=[]; solved=false; feedback=null; reviewing=false; revealed=false; render(); }
-  } catch (error) { $('#poetry-status').hidden=false; $('#poetry-status').textContent = error.message; }
-  finally { busy=false; $('#poetry-next').disabled=false; }
+  } catch (error) { showPoetryNotice(error.message); }
+  finally { busy=false; buttonBusy($('#poetry-next'),false); }
 }
 export function renderPoetryRoom(state, playerId) {
   room = {state,playerId};
   if (!state.poetry) return;
   if (question?.id !== state.poetry.id) { selected=[]; feedback=null; reviewing=false; revealed=false; }
-  if (state.poetryFeedback?.guess === selected.map(i=>state.poetry.tiles[i]).join('')) feedback=state.poetryFeedback;
+  if (state.poetryFeedback?.guess === selected.map(i=>state.poetry.tiles[i]).join('')) {
+    if (feedback !== state.poetryFeedback) announce('还没拼对。绿色表示目标句中有这个字，灰色表示没有或数量超出，颜色不表示位置。');
+    feedback=state.poetryFeedback;
+  }
   question = state.poetry; round=state.round; solved=state.phase==='poetry_solved';
   render();
 }
@@ -48,6 +79,8 @@ function render() {
   if (finishTransition) finishTransition();
   const changingQuestion = renderedKey !== undefined && key !== renderedKey && !solved;
   const completing = key === renderedKey && !renderedSolved && solved;
+  if (changingQuestion || completing) { clearTimeout(toastTimer);$('#poetry-toast').hidden=true; }
+  if (completing) announce(room ? `${room.state.players.find(p=>p.id===room.state.winner)?.name || '玩家'} 已答对` : revealed ? '已揭晓诗句' : '答对了');
   const before = completing ? capturePoetryCard() : null;
   const answer = room ? room.state.revealedAnswer : question.answer;
   const moveLetters = !revealed && before?.letters.map(l=>l.text).join('') === answer;
@@ -64,7 +97,7 @@ function renderContent() {
   $('#poetry-review').hidden = !solved;
   $('#poetry-review').textContent = reviewing ? '收起字盘' : '查看字盘';
   $('#poetry-instruction').hidden = solved;
-  $('#poetry-status').hidden = !room && (solved || !feedback);
+  updateMatch();
   $('#poetry-review').setAttribute('aria-expanded', String(reviewing));
   $('.poetry-edit-actions').hidden = solved;
   $('#poetry-source').hidden = !solved;
@@ -103,13 +136,12 @@ function renderContent() {
     button.setAttribute('aria-label',`${char}，第 ${i+1} 块${solved ? (selected.includes(i) ? '，答案用字' : '，干扰字') : ''}`);
     button.onclick=()=>{selected.push(i);feedback=null;render();};return button;
   }));
-  $('#poetry-submit').disabled=solved || selected.length!==length;
+  $('#poetry-submit').disabled=submitting || solved || selected.length!==length;
   $('#poetry-clear').disabled=solved || !selected.length;
   $('#poetry-next').textContent=solved ? '下一题' : '跳过';
   $('#poetry-next').classList.toggle('quiet-button', !solved);
   $('#poetry-next').hidden=room ? room.playerId!==room.state.hostId : !solved;
   $('#poetry-reveal').hidden=!!room || solved;
-  $('#poetry-status').textContent=solved ? (room ? `${room.state.players.find(p=>p.id===room.state.winner)?.name || '玩家'} 已答对！${room.playerId!==room.state.hostId ? '等待房主开始下一题。' : ''}` : '读罢此句，再拾新诗。') : feedback && question.tier==='advanced' ? '还没拼对。绿色：目标句中有；灰色：没有或数量超出。颜色不表示位置正确。' : '';
   $('#poetry-source').textContent=solved ? (room ? `${question.author}《${question.title}》` : `${question.author} ·《${question.title}》`) : '';
 }
 $('#poetry-review').onclick=()=>{reviewing=!reviewing;render();};
@@ -117,12 +149,17 @@ $('#poetry-clear').onclick=()=>{selected=[];feedback=null;render();};
 $('#poetry-next').onclick=next;
 $('#poetry-reveal').onclick=()=>{revealed=true;solved=true;render();};
 $('#poetry-submit').onclick=async()=>{
-  if(solved || !question || finishTransition) return;
+  if(submitting || solved || !question || finishTransition) return;
   const guess=selected.map(i=>question.tiles[i]).join('');
   if(guess.length!==(question.length || question.answer.length)) return;
-  if(act) { await act({type:'poetry_guess',guess}); return; }
+  if(act) {
+    submitting=true;buttonBusy($('#poetry-submit'),true);
+    try { await act({type:'poetry_guess',guess}); }
+    finally { submitting=false;buttonBusy($('#poetry-submit'),false);$('#poetry-submit').disabled=solved || selected.length!==(question.length || question.answer.length); }
+    return;
+  }
   const match=question.answers.find(a=>a.line===guess);
   if(match) {revealed=false;solved=true; question={...question,answer:guess,title:match.title,author:match.author};render();}
-  else if(question.tier==='advanced') { feedback={guess,present:guessMembership(question.answer,guess)};render(); }
-  else { $('#poetry-status').hidden=false; $('#poetry-status').textContent='还没拼对，试着调整字的顺序。'; }
+  else if(question.tier==='advanced') { feedback={guess,present:guessMembership(question.answer,guess)};render();announce('还没拼对。绿色表示目标句中有这个字，灰色表示没有或数量超出，颜色不表示位置。'); }
+  else showPoetryNotice('还没拼对，试着调整字的顺序。',true);
 };

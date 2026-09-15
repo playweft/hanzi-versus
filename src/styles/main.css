@@ -56,6 +56,12 @@ input {
   grid-column: 2;
   grid-row: 1;
   text-align: center;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 .game-content > .game-meta {
   justify-content: center;
@@ -406,7 +412,17 @@ button:focus-visible {
   color: #242720;
   box-shadow: none;
   font-family: "Kaiti SC", "STKaiti", "Songti SC", serif;
-  font-size: 21px;
+  font-size: clamp(24px, 6vw, 28px);
+  font-weight: 600;
+  line-height: 1.5;
+  display: grid;
+  place-items: center;
+}
+.poetry-glyph {
+  display: inline-block;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-indent: 0;
 }
 .poetry-slot:disabled {
   opacity: 1;
@@ -425,6 +441,7 @@ button:focus-visible {
   box-shadow: none;
   letter-spacing: 0;
   text-indent: 0;
+  font-size: clamp(25px, 6.5vw, 28px);
 }
 .poetry-tile:disabled {
   opacity: 0.38;
@@ -459,17 +476,19 @@ button:focus-visible {
 }
 .poetry-source {
   min-height: 20px;
-  margin: 0 5px;
-  color: #7c827a;
-  font-size: 13px;
+  margin: 8px 0 0;
+  text-align: center;
+  color: #626a60;
+  font-size: 15px;
   line-height: 1.8;
+  overflow-wrap: anywhere;
 }
 #poetry-round {
-  color: #90958d;
-  font-size: 12px;
+  margin: 2px 5px -8px;
+  font-size: 13px;
   font-weight: 400;
-  letter-spacing: 0;
-  margin: 0 5px;
+  letter-spacing: 0.03em;
+  color: #687065;
 }
 @media (max-width: 390px) {
   .poetry-card {
@@ -481,7 +500,6 @@ button:focus-visible {
   .poetry-tile {
     min-height: 60px;
     height: 60px;
-    font-size: 19px;
   }
 }
 
@@ -537,17 +555,7 @@ button:focus-visible {
 #poetry-game .game-content {
   gap: 16px;
 }
-#poetry-game #poetry-round {
-  margin: 2px 5px -8px;
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0.03em;
-  color: #687065;
-}
-#poetry-game #poetry-status {
-  margin: 0 5px;
-  line-height: 1.7;
-}
+
 #poetry-game .poetry-actions > button {
   box-shadow: none;
   transform: none;
@@ -565,14 +573,6 @@ button:focus-visible {
 #poetry-game .poetry-actions > button:not(.quiet-button):active:not(:disabled) {
   background: #345b3b;
 }
-#poetry-game .poetry-source {
-  margin: 8px 0 0;
-  text-align: center;
-  color: #626a60;
-  font-size: 15px;
-  line-height: 1.8;
-  overflow-wrap: anywhere;
-}
 #poetry-game.is-solved .poetry-card {
   margin-top: clamp(24px, 6svh, 64px);
   padding: 28px 18px 20px;
@@ -584,25 +584,31 @@ button:focus-visible {
   display: none;
 }
 #poetry-game.is-solved .card-heading h2 {
-  color: #668469;
-  font-size: 13px;
+  color: #58755b;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
 }
 #poetry-game.is-solved .poetry-slots {
-  margin: 24px 0 0;
-  gap: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.12em;
+  margin: 16px 0 0;
 }
 #poetry-game.is-solved .poetry-slot {
   background: transparent;
   border: 0;
   opacity: 1;
   color: #294b30;
-  font-size: clamp(24px, 6vw, 32px);
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 48px;
   cursor: default;
 }
 #poetry-game.is-solved .poetry-navigation {
   justify-content: center;
+  margin-top: 4px;
+  padding-bottom: 0;
 }
 #poetry-game.is-solved #poetry-next {
   width: min(100%, 320px);
@@ -669,10 +675,6 @@ button:focus-visible {
 #poetry-game .poetry-edit-actions #poetry-submit {
   min-width: 104px;
 }
-
-#poetry-game .poetry-tile {
-  font-size: clamp(25px, 6.5vw, 28px);
-}
 #poetry-game:not(.is-solved) .poetry-navigation {
   margin-top: -6px;
 }
@@ -682,56 +684,8 @@ button:focus-visible {
   font-weight: 400;
   color: #7c827a;
 }
-
-/* Glyph metrics never change between the editable and completed layout. */
-#poetry-game .poetry-slot {
-  font-size: clamp(24px, 6vw, 28px);
-  font-weight: 600;
-  line-height: 1.5;
-  display: grid;
-  place-items: center;
-}
-.poetry-glyph {
-  display: inline-block;
-  line-height: 1.5;
-  letter-spacing: 0;
-  text-indent: 0;
-}
-#poetry-game.is-solved .poetry-slots {
-  display: flex;
-  justify-content: center;
-  gap: 0.12em;
-  margin: 16px 0 0;
-}
-#poetry-game.is-solved .poetry-slot {
-  flex: 0 0 auto;
-  width: auto;
-  min-height: 48px;
-  font-size: clamp(24px, 6vw, 28px);
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-/* Quiet navigation leaves the poem as the focal point. */
-.game-header h1 {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
-    sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-#poetry-game.is-solved .card-heading h2 {
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  color: #58755b;
-}
 #poetry-game.is-solved .poetry-source {
   margin-top: 12px;
-}
-#poetry-game.is-solved .poetry-navigation {
-  margin-top: 4px;
-  padding-bottom: 0;
 }
 @media (max-height: 600px) {
   #poetry-game.is-solved .poetry-card {
@@ -739,3 +693,56 @@ button:focus-visible {
     padding-top: 24px;
   }
 }
+
+/* Feedback never adds height to the question layout. */
+.poetry-match {
+  height: 22px;
+  margin: 0 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #687065;
+  font-size: 13px;
+  line-height: 22px;
+}
+.poetry-toast {
+  position: fixed;
+  z-index: 10;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #303d32;
+  color: #fff;
+  font-size: 14px;
+  pointer-events: none;
+}
+.mode-options button[aria-busy="true"],
+#poetry-game button[aria-busy="true"] {
+  position: relative;
+  color: transparent;
+}
+.mode-options button[aria-busy="true"]::after,
+#poetry-game button[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #a8bda9;
+  border-top-color: #345b3b;
+  border-radius: 50%;
+  animation: poetry-pending 0.8s linear infinite;
+}
+@keyframes poetry-pending { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .mode-options button[aria-busy="true"]::after,
+#poetry-game button[aria-busy="true"]::after { animation: none; }
+}
+
+.mode-options button[aria-busy="true"] small { visibility: hidden; }

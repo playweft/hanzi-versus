@@ -4,6 +4,7 @@ import {
   startPoetry,
   createPoetryQuestion,
   renderPoetryRoom,
+  showPoetryNotice,
 } from "./games/poetry/ui.js";
 const $ = (selector) => document.querySelector(selector);
 const ui = {
@@ -199,7 +200,7 @@ function applyRoomState(update) {
       createPoetryQuestion()
         .then((question) => roomAction({ type: "start_poetry", question }))
         .catch((error) => {
-          $("#poetry-status").textContent = error.message;
+          showPoetryNotice(error.message);
         })
         .finally(() => {
           poetryStarting = false;
@@ -351,12 +352,12 @@ async function roomAction(action) {
     const result = await rpc("room.action", { action });
     if (result?.accepted === false) {
       const message = result.error?.message || "操作未被接受";
-      if (activeMode === "poetry") $("#poetry-status").textContent = message;
+      if (activeMode === "poetry") showPoetryNotice(message, result.error?.code === "TRY_AGAIN");
       else showNotice(message);
     }
   } catch (error) {
     if (activeMode === "poetry")
-      $("#poetry-status").textContent = error.message;
+      showPoetryNotice(error.message);
     else showNotice(error.message);
   }
 }
@@ -472,9 +473,10 @@ ui.startButtons.forEach((button) =>
     started = true;
     updateStartScreen();
     if (activeMode === "poetry") {
-      ui.startScreen.hidden = true;
+      button.setAttribute("aria-busy", "true");
       try {
         await startPoetry(context.mode === "room" ? roomAction : undefined);
+        ui.startScreen.hidden = true;
         if (context.mode === "room") {
           if (roomState?.gameType === "poetry")
             renderPoetryRoom(roomState, context.playerId);
@@ -490,6 +492,8 @@ ui.startButtons.forEach((button) =>
         ui.startScreen.hidden = false;
         updateStartScreen();
         ui.startStatus.textContent = error.message;
+      } finally {
+        button.setAttribute("aria-busy", "false");
       }
       return;
     }
