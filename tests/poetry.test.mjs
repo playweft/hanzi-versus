@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { makeQuestion, pickPoem, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors, canDistract, guessMembership } from '../src/games/poetry/engine.mjs';
+import { makeQuestion, pickPoem, poemWeight, overlap, chooseExtras, selectDistractors, validAnswers, rankDistractors, canDistract, guessMembership } from '../src/games/poetry/engine.mjs';
 const poems=JSON.parse(readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 let seed=42;
 const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
@@ -60,6 +60,28 @@ test('default mix uses tier weights rather than bank sizes',()=>{
  assert.ok(counts.basic>4200 && counts.basic<4800);
  assert.ok(counts.normal>4200 && counts.normal<4800);
  assert.ok(counts.advanced>800 && counts.advanced<1200);
+});
+test('poem weight tracks line count below four, then holds flat',()=>{
+ assert.deepEqual([1,2,3,4,5,8,16].map(n=>poemWeight({lines:Array(n).fill('字')})),[1,2,3,4,4,4,4]);
+ // Below the cap every line of every poem weighs the same; at or above it every
+ // poem owns the same weight, so a longer poem's individual lines thin out.
+ const pool=[1,2,3,4,6].map(n=>({id:`w${n}`,tier:'basic',author:`a${n}`,
+   lines:Array.from({length:n},(_,k)=>`${n}${k}`)}));
+ const weights=pool.map(poemWeight);
+ assert.deepEqual(weights,[1,2,3,4,4]);
+ assert.deepEqual(weights.map((w,i)=>w/pool[i].lines.length),[1,1,1,1,4/6]);
+ // Boundaries are cumulative weight bands, and the tier draw plus the poem draw
+ // must stay exactly two calls so injected random streams never shift.
+ const total=weights.reduce((a,b)=>a+b,0);
+ let lower=0;
+ pool.forEach((poem,i)=>{
+  const upper=lower+weights[i]/total;
+  let calls=0;
+  const scripted=()=>{calls++;return calls===1?0:(lower+upper)/2;};
+  assert.equal(pickPoem(pool,scripted).id,poem.id,`band ${i}`);
+  assert.equal(calls,2,`band ${i} draws`);
+  lower=upper;
+ });
 });
 test('all lines are distinct and restored versions match familiar text',()=>{
  const lines=poems.flatMap(p=>p.lines);assert.equal(new Set(lines).size,lines.length);

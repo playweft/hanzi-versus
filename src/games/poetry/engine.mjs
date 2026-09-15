@@ -115,6 +115,14 @@ export function selectDistractors(answer, candidates, count, random = Math.rando
   return { sources, extras };
 }
 export const TIER_WEIGHTS = { basic: 45, normal: 45, advanced: 10 };
+export const POEM_WEIGHT_CAP = 4;
+// Drawing a poem uniformly would hit a one-line poem's only line four times as
+// often as any line of a four-line poem. Weight by line count up to the cap:
+// below it every line of every poem is equally likely, at or above it every poem
+// is. The two rules meet at the cap, so the weight never jumps.
+export function poemWeight(poem) {
+  return Math.min(poem.lines?.length || 1, POEM_WEIGHT_CAP);
+}
 export function pickPoem(poems, random = Math.random, previousId) {
   const tiers = Object.entries(TIER_WEIGHTS).filter(([tier]) => poems.some(p => (p.tier || 'basic') === tier));
   let draw = random() * tiers.reduce((sum, [, weight]) => sum + weight, 0);
@@ -124,7 +132,11 @@ export function pickPoem(poems, random = Math.random, previousId) {
   const previousAuthor = poems.find(p => p.id === previousId)?.author;
   const differentAuthors = pool.filter(p => p.author !== previousAuthor);
   const choices = differentAuthors.length ? differentAuthors : pool.filter(p => p.id !== previousId);
-  return choices[Math.floor(random() * choices.length)] || pool[0];
+  if (!choices.length) return pool[0];
+  // Exactly one draw, so callers that inject `random` keep the same stream shape.
+  let pick = random() * choices.reduce((sum, poem) => sum + poemWeight(poem), 0);
+  for (const poem of choices) { pick -= poemWeight(poem); if (pick < 0) return poem; }
+  return choices.at(-1);
 }
 // School tiers proxy familiarity. Every tied line remains eligible (weights 4:2:1).
 export const FAMILIARITY_WEIGHTS = { basic: 4, normal: 2, advanced: 1 };
