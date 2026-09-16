@@ -59,7 +59,7 @@ input {
   font-family:
     -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
     sans-serif;
-  font-size: 20px;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0;
 }
@@ -834,10 +834,18 @@ button:focus-visible {
   border-radius: 50%;
   animation: poetry-pending 0.8s linear infinite;
 }
-@keyframes poetry-pending { to { transform: rotate(360deg); } }
+@keyframes poetry-pending {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .mode-options button[aria-busy="true"]::after,
-#poetry-game button[aria-busy="true"]::after { animation: none; }
+  #poetry-game button[aria-busy="true"]::after {
+    animation: none;
+  }
 }
 
-.mode-options button[aria-busy="true"] small { visibility: hidden; }
+.mode-options button[aria-busy="true"] small {
+  visibility: hidden;
+}
