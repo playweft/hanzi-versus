@@ -137,7 +137,6 @@ test('school and familiar pools admit only explicitly reviewed lines',()=>{
  assert.equal(poems.find(p=>p.lines.includes('泉眼无声惜细流')).title,'小池');
  assert.equal(poems.find(p=>p.lines.includes('梅子金黄杏子肥')).author,'范成大');
  assert.ok(poems.find(p=>p.id==='school-high-15').lines.includes('隔篱呼取尽余杯'));
- assert.deepEqual(readFileSync(new URL('../data/poetry-curated.json',import.meta.url)),readFileSync(new URL('../public/data/poetry-curated.json',import.meta.url)));
 });
 
 test('primary decoy stays one character short before adding a secondary decoy',()=>{

@@ -32,8 +32,12 @@ function emitPlayweftPackage(base, outDir) {
       }
     },
     async closeBundle() {
+      // _headers must sit at the assets root (dist/). That is the package
+      // directory itself in the root build and its parent for BASE_PATH builds,
+      // so `outDir/..` alone dropped it in the repo root instead of dist/.
+      const assetsRoot = outDir === "dist" ? outDir : resolve(outDir, "..");
       await writeFile(
-        resolve(outDir, "..", "_headers"),
+        resolve(assetsRoot, "_headers"),
         await readFile(new URL("./public/_headers", import.meta.url)),
       );
     },
@@ -47,7 +51,10 @@ export default defineConfig(({ mode, command }) => {
   const outDir = base === "/" ? "dist" : `dist/${base.slice(1, -1)}`;
   return {
     base,
-    publicDir: false,
+    // The package files live in public/ and the build emits them itself so it can
+    // rewrite the manifest id; the dev server still has to serve them, otherwise
+    // every package file would need a second copy at the repo root.
+    publicDir: command === "serve" ? "public" : false,
     plugins: [emitPlayweftPackage(base, outDir)],
     build: { outDir },
   };

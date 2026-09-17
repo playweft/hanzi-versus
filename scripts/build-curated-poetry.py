@@ -133,9 +133,11 @@ for poem in result:
 if leftovers:
  raise ValueError('课标篇目残留，请在 poetry-selection.txt 中注释掉对应行：'+'；'.join(leftovers))
 summary={tier:{'poems':sum(p['tier']==tier for p in result),'lines':sum(len(p['lines']) for p in result if p['tier']==tier)} for tier in ['basic','normal','advanced']}
-for out in [base/'data',base/'public/data']:
- (out/'poetry-curated.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
- (out/'poetry-README.md').write_text(f'''# 拾字成诗：熟悉诗句精选库
+# 上线文件只在 public/，仓库根目录不再保留副本；选篇清单是给人看的，放 docs/。
+docs=base/'docs'; docs.mkdir(exist_ok=True)
+out=base/'public/data'
+(out/'poetry-curated.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+(out/'poetry-README.md').write_text(f'''# 拾字成诗：熟悉诗句精选库
 共 {len(result)} 条作品分层记录（同一作品可有不同层的选句），{sum(len(p['lines']) for p in result)} 个候选句。
 原文：https://github.com/chinese-poetry/chinese-poetry ，版本 {commit}。
 分层：{json.dumps(summary,ensure_ascii=False)}。默认入门45%、普通45%、进阶10%，各层先抽作品再抽句子。
@@ -149,11 +151,11 @@ for out in [base/'data',base/'public/data']:
 rows=['# 课标诗词篇目与游戏选句', '', '来源：'+school['sources']['compilation'], '', *school['notes'], '', '| 学段 | 编号 | 作者 | 篇目 | 题池 | 选句 |', '| --- | --- | --- | --- | --- | --- |']
 for e in entries:
  rows.append('| '+ ' | '.join([{'primary':'小学','middle':'初中','high':'高中'}[e['stage']],str(e['number']),e['author'],e['title'],{'basic':'入门','normal':'普通','advanced':'进阶'}[e['tier']] if e['lines'] else '不出题','；'.join(e['lines']) or e['selectionNote']])+' |')
-(base/'data/poetry-school-list.md').write_text('\n'.join(rows)+'\n')
+(docs/'poetry-school-list.md').write_text('\n'.join(rows)+'\n')
 print(summary)
 print(f'{len(result)} 首 / {sum(len(p["lines"]) for p in result)} 句')
 
 rows=['# 熟悉名句补充清单', '', '在课标白名单之外按单句补充，分层为编辑判断；不将整篇自动加入普通题池。', '', '| 作者 | 篇目 | 题池 | 选句 | 筛选来源 |', '| --- | --- | --- | --- | --- |']
 for e in famous:
  rows.append('| '+' | '.join([e['author'],e['title'],{'basic':'入门','normal':'普通'}[e['tier']],'；'.join(e['lines']),('[主题或选集]('+e['discoveryUrl']+')') if e.get('discoveryUrl') else '前期逐句精选'])+' |')
-(base/'data/poetry-famous-list.md').write_text('\n'.join(rows)+'\n')
+(docs/'poetry-famous-list.md').write_text('\n'.join(rows)+'\n')

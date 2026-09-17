@@ -17,15 +17,26 @@
 
 AI 不可用、未连接 Cloudflare 或未授权时，游戏会使用本地兜底提示以保持流程可玩。
 
-## Playweft 包
+## 目录与发布
+
+`public/` 是**上线文件的唯一来源**：`npm run build` 只从它读取并原样输出，`npm run dev` 也从它提供静态文件。仓库根目录不再保留任何副本，避免两份同名文件悄悄分叉。
 
 ```text
-playweft.json  Manifest（单人 + 两人房间）
-index.html     界面
-app.js         Playweft bridge、AI 提示与单人逻辑
-game.lua       双人房间的权威状态机
-data/          THUOCL 四字成语题库
+public/          上线包的唯一来源
+  playweft.json  Manifest（单人 + 两人房间）
+  game.lua       双人房间的权威状态机
+  icon.svg       游戏图标
+  data/          THUOCL 成语库、诗词精选库
+index.html       Vite 构建入口，唯一留在根目录的上线文件
+src/             前端逻辑，Vite 打包进 assets/
+scripts/         题库构建脚本与选篇白名单（不入包）
+docs/            构建脚本生成的选篇清单（不入包）
+tests/           Node 测试
 ```
+
+`dist/`（设了 `BASE_PATH` 时为 `dist/<base>/`）里这些文件保持原名，所以 `<img src="./icon.svg">`、`fetch('./data/...')` 和 manifest 里的相对路径在开发与线上指向同一份文件。
+
+`index.html` 是唯一例外：它是 Vite 的构建入口，必须留在根目录。`public/` 是原样复制区，Vite 不处理其中的 `./src/main.js` 与 `./src/styles/main.css`，把入口放进去只会把未打包的引用直接拷进包里。它的产物由 Vite 输出到包目录。
 
 ## 本地开发与部署
 
