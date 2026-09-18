@@ -16,9 +16,16 @@
     <h1 id="start-title">汉字对决</h1>
     <p class="start-description">一字一句，皆有妙趣。请选择一种玩法。</p>
     <div class="mode-options" role="group" aria-label="选择玩法">
-      <button type="button" data-play-mode="idiom" disabled><strong>成语寻踪</strong><small>循着提示，猜出成语。</small></button>
-      <button type="button" data-play-mode="poetry" disabled><strong>拾字成诗</strong><small>拾取散字，拼成诗句。九选五 /
-          十二选七</small></button>
+      <button type="button" data-play-mode="idiom" disabled>
+        <span class="scroll-rod" aria-hidden="true"></span>
+        <span class="scroll-paper"><strong>成语寻踪</strong></span>
+        <span class="scroll-rod" aria-hidden="true"></span>
+      </button>
+      <button type="button" data-play-mode="poetry" disabled>
+        <span class="scroll-rod" aria-hidden="true"></span>
+        <span class="scroll-paper"><strong>拾字成诗</strong></span>
+        <span class="scroll-rod" aria-hidden="true"></span>
+      </button>
     </div>
     <p id="start-status" class="start-status" aria-live="polite">正在连接…</p>
   </section>
