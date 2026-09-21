@@ -114,7 +114,7 @@ export function selectDistractors(answer, candidates, count, random = Math.rando
   if (!extras) throw new Error('无法生成不完整覆盖干扰诗句的字块');
   return { sources, extras };
 }
-export const TIER_WEIGHTS = { basic: 45, normal: 45, advanced: 10 };
+export const TIER_WEIGHTS = { basic: 35, normal: 55, advanced: 10 };
 export const POEM_WEIGHT_CAP = 4;
 // Drawing a poem uniformly would hit a one-line poem's only line four times as
 // often as any line of a four-line poem. Weight by line count up to the cap:

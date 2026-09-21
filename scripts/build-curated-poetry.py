@@ -94,15 +94,21 @@ for entry in entries:
 for poem in result:
  poem['tier']='advanced'
  poem['selection']['basis']='课外或课标白名单之外的选句，仅进阶；'+poem['selection']['basis']
-# Familiar supplemental lines have their own explicit tier; never promote a whole work.
+# Familiar supplemental lines carry their own tier: promote only the well-known
+# lines of a work, or the whole work when every line is.
 famous=json.loads((base/'scripts/poetry-famous.json').read_text())
 famousPoems=[]
 for entry in famous:
  source=entry['source']
  if 'file' in source:
-  original=json.loads((root/source['file']).read_text())[source['index']]
+  original=json.loads((root/source['file']).read_text())
+  # 与扩展选单同一种定位：数字进数组、字符串进对象，蒙学（content/N/content/M）才引用得到。
+  for key in str(source['index']).split('/'):
+   original=original[int(key)] if isinstance(original,list) else original[key]
   sourceLines=[convert(line) for paragraph in original.get('paragraphs',original.get('para',[])) for line in re.split('[，。！？；：、,.!?;:]',paragraph)]
-  if convert(original['author'])!=entry['author'] or convert(original.get('title',original.get('rhythmic','')))!=source['title'] or any(line not in sourceLines for line in entry['lines']):
+  sourceTitle=convert(original.get('title',original.get('chapter',original.get('rhythmic',''))))
+  sourceAuthor=re.sub(r'（.*?）|\(.*?\)','',convert(original['author']))
+  if sourceAuthor!=entry['author'] or sourceTitle!=source['title'] or any(line not in sourceLines for line in entry['lines']):
    raise ValueError(f'名句补充源文不一致: {entry["title"]}')
  elif not source.get('url') or not source.get('review'):
   raise ValueError(f'名句补充缺少异文核对出处: {entry["title"]}')
@@ -140,7 +146,7 @@ out=base/'public/data'
 (out/'poetry-README.md').write_text(f'''# 拾字成诗：熟悉诗句精选库
 共 {len(result)} 条作品分层记录（同一作品可有不同层的选句），{sum(len(p['lines']) for p in result)} 个候选句。
 原文：https://github.com/chinese-poetry/chinese-poetry ，版本 {commit}。
-分层：{json.dumps(summary,ensure_ascii=False)}。默认入门45%、普通45%、进阶10%，各层先抽作品再抽句子。
+分层：{json.dumps(summary,ensure_ascii=False)}。默认入门35%、普通55%、进阶10%，各层先抽作品再抽句子。
 选篇：scripts/poetry-school.json 为课标篇目及逐句白名单，小学入门，初高中普通，个别生僻高中篇目进阶。课标共155项，非五七字篇目保留在清单但不出题。scripts/poetry-selection.txt 为课外选单，scripts/poetry-expansion.json 为《唐诗三百首》《千家诗》逐篇复核的扩展选单，scripts/poetry-restored.json 保存通行文本与核对网址。scripts/poetry-famous.json 为逐句复核的熟悉名句补充白名单，按单句放入入门或普通，不提升整篇。课标、名句补充、旧选单依次去重，旧选单剩余句仅供进阶。不是某一教材的完整篇目表，也不是对人群熟悉度的统计结论。
 每条作品保留源文件、数组位置、原标题、匹配锚点与选句依据；不使用作者或词牌的模糊匹配，不使用搜索排名。
 常见短诗只保留源文中完整五言七言句，长篇只取明确列出的句子；原文不匹配时构建失败，禁止静默补入或漏项。

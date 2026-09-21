@@ -4008,7 +4008,7 @@
       "尽荠麦青青",
       "念桥边红药"
     ],
-    "tier": "normal",
+    "tier": "advanced",
     "selection": {
       "basis": "普通高中语文课程标准（2017年版2020年修订）附录1",
       "mode": "school-selected-lines",
@@ -4988,27 +4988,60 @@
     }
   },
   {
-    "id": "9d3d242d5cc3cf82",
-    "title": "相思",
+    "id": "famous-91b772706d10043b",
     "author": "王维",
-    "kind": "唐诗",
+    "title": "相思",
+    "kind": "古诗词",
     "lines": [
       "红豆生南国",
       "春来发几枝",
       "愿君多采撷",
       "此物最相思"
     ],
-    "tier": "advanced",
+    "tier": "basic",
     "selection": {
-      "basis": "课外或课标白名单之外的选句，仅进阶；编辑精选：常见短诗全文或长篇名句；非搜索排名",
-      "mode": "short-poem",
+      "basis": "熟悉名句补充白名单；四句皆为通行名句，故整篇置于入门，不拆散。源文取《唐诗三百首》通行读法“春来发几枝”（《全唐诗》作“秋来发故枝”）",
+      "mode": "famous-selected-lines",
       "anchor": "红豆生南国",
-      "review": "逐条显式选句并与源文精确核对"
+      "review": "逐句补充白名单，保留源文或通行异文出处"
     },
     "source": {
-      "file": "蒙学/tangshisanbaishou.json",
-      "index": "content/0/content/3",
-      "title": "相思"
+      "file": "scripts/poetry-famous.json",
+      "title": "相思",
+      "original": {
+        "file": "蒙学/tangshisanbaishou.json",
+        "index": "content/0/content/3",
+        "title": "相思"
+      }
+    }
+  },
+  {
+    "id": "famous-c6c0614403ffc9d0",
+    "author": "李白",
+    "title": "月下独酌四首·其一",
+    "kind": "古诗词",
+    "lines": [
+      "花间一壶酒",
+      "独酌无相亲",
+      "举杯邀明月",
+      "对影成三人",
+      "我歌月徘徊",
+      "我舞影零乱"
+    ],
+    "tier": "normal",
+    "selection": {
+      "basis": "熟悉名句补充白名单；仅取全篇中脱开上下文仍可独立辨识的六句，其余八句不出题；分层为编辑判断，不代表搜索频率统计",
+      "mode": "famous-selected-lines",
+      "anchor": "花间一壶酒",
+      "review": "逐句补充白名单，保留源文或通行异文出处"
+    },
+    "source": {
+      "file": "scripts/poetry-famous.json",
+      "title": "月下独酌四首·其一",
+      "original": {
+        "url": "https://www.gushiwen.cn/shiwenv_3185407c5519.aspx",
+        "review": "通行文本人工核对；上游《全唐诗》《唐诗三百首》《御定全唐詩》一致作“我歌月裴回”，采用此出处所列通行句“我歌月徘徊”"
+      }
     }
   },
   {
@@ -12601,6 +12634,34 @@
       "file": "蒙学/qianjiashi.json",
       "index": "content/3/content/41",
       "title": "山中寡妇"
+    }
+  },
+  {
+    "id": "983037869c341c37",
+    "author": "李白",
+    "title": "塞下曲六首·其一",
+    "kind": "唐诗",
+    "lines": [
+      "五月天山雪",
+      "无花只有寒",
+      "笛中闻折柳",
+      "春色未曾看",
+      "晓战随金鼓",
+      "宵眠抱玉鞍",
+      "愿将腰下剑",
+      "直为斩楼兰"
+    ],
+    "tier": "advanced",
+    "selection": {
+      "basis": "课外或课标白名单之外的选句，仅进阶；核对公开原文，恢复熟悉通行版本；只收古诗原文，不收现代注释译文。《全唐诗》作“无花祗有寒”“愿将腰下劒”，此处依通行本作“只”“剑”",
+      "mode": "short-poem",
+      "anchor": "五月天山雪",
+      "review": "2026-09-21"
+    },
+    "source": {
+      "file": "scripts/poetry-restored.json",
+      "url": "https://www.gushiwen.cn/GuShiWen_1692696246.aspx",
+      "title": "塞下曲六首·其一"
     }
   }
 ]

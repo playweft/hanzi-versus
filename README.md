@@ -65,7 +65,7 @@ Playweft v1 的 `languageModel.prompt` 只能由 iframe 发起，Lua 房间状�
 - 点击字块依次成句，点击答案位置可撤回，支持清空、揭晓（单人）和下一题。题库中能由当前字块组成的其他同长度诗句也接受。
 - 房间玩法由房主选择；诗词模式共享字块，先答对者获胜，房主负责下一题。
 
-默认使用基础、普通、进阶三层精选题库，抽题权重为45%、45%、10%。分级为编辑判断，未经过用户答题统计校准。来源和选篇规则见 `data/poetry-README.md`。短诗保留完整五言七言句，长篇仅取名句；目标句和干扰句使用同一精选库，抽题优先避开上一题作者。旧搜索 Top K 库不再打包或加载。
+默认使用基础、普通、进阶三层精选题库，抽题权重为35%、55%、10%。分级为编辑判断，未经过用户答题统计校准。来源和选篇规则见 `public/data/poetry-README.md`。短诗保留完整五言七言句，长篇仅取名句；目标句和干扰句使用同一精选库，抽题优先避开上一题作者。旧搜索 Top K 库不再打包或加载。
 
 重建：安装 `opencc-python-reimplemented` 后运行 `python scripts/build-curated-poetry.py /path/to/chinese-poetry`。
 验证：`npm test`；安装 Python `lupa` 后运行 `python tests/poetry-room.py` 可验证房间规则。
