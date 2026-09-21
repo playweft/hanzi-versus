@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import {
   makeQuestion,
   pickPoem,
@@ -245,33 +246,56 @@ test("school and familiar pools admit only explicitly reviewed lines", () => {
       Array.from({ length: count }, (_, i) => i + 1),
     );
   }
-  for (const entry of school.entries) {
-    const poem = poems.find(
-      (p) => p.id === `school-${entry.stage}-${entry.number}`,
-    );
-    if (!entry.lines.length) {
-      assert.equal(poem, undefined);
-      continue;
-    }
-    assert.ok(poem, entry.title);
-    assert.deepEqual(poem.lines, entry.lines);
-    assert.equal(poem.tier, entry.tier);
+  // 课标目录只登记篇目；出不出题、出哪几句，看总表里有没有对应篇目。
+  const schoolByKey = new Map(
+    school.entries.map((e) => [`${e.stage}-${e.number}`, e]),
+  );
+  for (const poem of poems.filter(
+    (p) => p.selection.mode === "school-selected-lines",
+  )) {
+    const [, stage, number] = /^school-(primary|middle|high)-(\d+)/.exec(poem.id);
+    const entry = schoolByKey.get(`${stage}-${number}`);
+    assert.ok(entry, poem.id);
+    assert.equal(poem.author, entry.author, poem.id);
+    assert.equal(poem.title, entry.title, poem.id);
   }
   const famous = JSON.parse(
     readFileSync(new URL("../scripts/poetry-famous.json", import.meta.url)),
   );
   for (const entry of famous) {
-    const poem = poems.find(
-      (p) =>
-        p.source.file === "scripts/poetry-famous.json" &&
-        p.author === entry.author &&
-        p.title === entry.title,
-    );
-    assert.ok(poem, entry.title);
-    assert.deepEqual(poem.lines, entry.lines);
-    assert.equal(poem.tier, entry.tier);
     assert.ok(entry.source.file || (entry.source.url && entry.source.review));
+    assert.ok(
+      poems.some(
+        (p) =>
+          p.source.file === "scripts/poetry-famous.json" &&
+          p.author === entry.author &&
+          p.title === entry.title,
+      ),
+      `${entry.author}《${entry.title}》名句登记没有对应记录`,
+    );
   }
+  // 出处登记不能有死条目：每一条都要在题库里找得到对应篇目。
+  for (const [name, registry] of [
+    [
+      "扩展",
+      JSON.parse(
+        readFileSync(new URL("../scripts/poetry-expansion.json", import.meta.url)),
+      ),
+    ],
+    [
+      "通行",
+      JSON.parse(
+        readFileSync(new URL("../scripts/poetry-restored.json", import.meta.url)),
+      ),
+    ],
+  ])
+    for (const entry of registry)
+      assert.ok(
+        poems.some(
+          (p) => p.author === entry.author && p.title === entry.title,
+        ),
+        `${name}登记里的 ${entry.author}《${entry.title}》在题库里没有对应篇目`,
+      );
   for (const line of [
     "一寸光阴一寸金",
     "读书破万卷",
@@ -289,17 +313,59 @@ test("school and familiar pools admit only explicitly reviewed lines", () => {
       "normal",
       line,
     );
-  for (const poem of poems.filter(
-    (p) =>
-      p.tier !== "advanced" && p.source.file !== "scripts/poetry-famous.json",
-  )) {
-    assert.equal(poem.source.file, "scripts/poetry-school.json");
-    assert.equal(poem.tier === "basic", poem.selection.stage === "primary");
+  // 档位只在 scripts/poetry-tiers.yaml 声明一处：其余清单只决定收入哪些句子。
+  const yamlFile = (name) =>
+    JSON.parse(
+      execFileSync(
+        "python3",
+        ["-c", "import json,sys,yaml; print(json.dumps(yaml.safe_load(sys.stdin.read())))"],
+        {
+          input: readFileSync(new URL(name, import.meta.url), "utf8"),
+          encoding: "utf8",
+        },
+      ),
+    );
+  const tiers = yamlFile("../scripts/poetry-tiers.yaml");
+  const byTitle = new Map();
+  for (const entry of tiers) {
+    assert.ok(
+      ["basic", "normal", "advanced"].includes(entry.tier),
+      `${entry.author}《${entry.title}》未声明 tier`,
+    );
+    const key = `${entry.author}|${entry.title}`;
+    if (!byTitle.has(key)) byTitle.set(key, []);
+    byTitle.get(key).push(entry);
   }
-  assert.equal(
-    poems.find((p) => p.lines.includes("双泪落君前")).tier,
-    "advanced",
-  );
+  // 每条记录的每一句，档位都必须等于总表算出来的值：篇目 tier 是默认，
+  // lines 里的句子单独覆盖。既不允许缺省值凭空造出题池，也不允许被别的清单
+  // 静默覆盖——扩展选单的 tier 曾被构建器统一覆盖成进阶，兜底一改，152 条
+  // 集体漂移；改了不生效也是同一类错误。
+  for (const poem of poems) {
+    const declared = byTitle.get(`${poem.author}|${poem.title}`);
+    assert.ok(
+      declared,
+      `${poem.author}《${poem.title}》没有在 poetry-tiers.yaml 登记`,
+    );
+    const rule =
+      declared.length === 1
+        ? declared[0]
+        : declared.find(
+            (d) =>
+              d.anchor === poem.selection.anchor ||
+              poem.lines.includes(d.anchor),
+          );
+    assert.ok(rule, `${poem.author}《${poem.title}》在总表里无法定位`);
+    for (const line of poem.lines)
+      assert.equal(
+        poem.tier,
+        rule.overrides?.[line] ?? rule.tier,
+        `${poem.author}《${poem.title}》${line}`,
+      );
+  }
+  // 反向：总表里的每个篇目都必须真的在题库里，否则就是改了不生效的死条目。
+  const banked = new Set(poems.map((p) => `${p.author}|${p.title}`));
+  for (const key of byTitle.keys())
+    assert.ok(banked.has(key), `${key} 在总表里但不在题库`);
   assert.deepEqual(poems.find((p) => p.id === "school-primary-18").lines, [
     "小时不识月",
     "呼作白玉盘",

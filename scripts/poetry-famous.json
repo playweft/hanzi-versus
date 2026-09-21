@@ -2,11 +2,6 @@
   {
     "author": "苏轼",
     "title": "定风波·莫听穿林打叶声",
-    "tier": "normal",
-    "lines": [
-      "一蓑烟雨任平生",
-      "也无风雨也无晴"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 509,
@@ -17,11 +12,6 @@
   {
     "author": "晏几道",
     "title": "临江仙·梦后楼台高锁",
-    "tier": "normal",
-    "lines": [
-      "当时明月在",
-      "曾照彩云归"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 118,
@@ -32,10 +22,6 @@
   {
     "author": "李之仪",
     "title": "卜算子·我住长江头",
-    "tier": "normal",
-    "lines": [
-      "只愿君心似我心"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 840,
@@ -46,11 +32,7 @@
   {
     "author": "李白",
     "title": "梦游天姥吟留别",
-    "tier": "normal",
-    "lines": [
-      "且放白鹿青崖间",
-      "须行即骑访名山"
-    ],
+    "anchor": "且放白鹿青崖间",
     "source": {
       "file": "全唐诗/poet.tang.8000.json",
       "index": 400,
@@ -61,11 +43,6 @@
   {
     "author": "孟郊",
     "title": "登科后",
-    "tier": "normal",
-    "lines": [
-      "春风得意马蹄疾",
-      "一日看尽长安花"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.19000.json",
       "index": 893,
@@ -76,11 +53,6 @@
   {
     "author": "李白",
     "title": "南陵别儿童入京",
-    "tier": "normal",
-    "lines": [
-      "仰天大笑出门去",
-      "我辈岂是蓬蒿人"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.8000.json",
       "index": 427,
@@ -91,11 +63,6 @@
   {
     "author": "苏轼",
     "title": "蝶恋花·春景",
-    "tier": "normal",
-    "lines": [
-      "天涯何处无芳草",
-      "多情却被无情恼"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 579,
@@ -106,10 +73,6 @@
   {
     "author": "苏轼",
     "title": "浣溪沙·细雨斜风作晓寒",
-    "tier": "normal",
-    "lines": [
-      "人间有味是清欢"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 699,
@@ -120,10 +83,6 @@
   {
     "author": "苏轼",
     "title": "定风波·南海归赠王定国侍人寓娘",
-    "tier": "normal",
-    "lines": [
-      "此心安处是吾乡"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 516,
@@ -134,11 +93,6 @@
   {
     "author": "纳兰性德",
     "title": "木兰花令·拟古决绝词",
-    "tier": "normal",
-    "lines": [
-      "人生若只如初见",
-      "何事秋风悲画扇"
-    ],
     "source": {
       "file": "纳兰性德/纳兰性德诗集.json",
       "index": 1,
@@ -149,11 +103,6 @@
   {
     "author": "纳兰性德",
     "title": "浣溪沙·谁念西风独自凉",
-    "tier": "normal",
-    "lines": [
-      "赌书消得泼茶香",
-      "当时只道是寻常"
-    ],
     "source": {
       "file": "纳兰性德/纳兰性德诗集.json",
       "index": 8,
@@ -164,10 +113,6 @@
   {
     "author": "李贺",
     "title": "金铜仙人辞汉歌",
-    "tier": "normal",
-    "lines": [
-      "天若有情天亦老"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.20000.json",
       "index": 864,
@@ -178,11 +123,6 @@
   {
     "author": "蒋捷",
     "title": "虞美人·听雨",
-    "tier": "normal",
-    "lines": [
-      "少年听雨歌楼上",
-      "红烛昏罗帐"
-    ],
     "source": {
       "file": "宋词/ci.song.18000.json",
       "index": 519,
@@ -193,11 +133,6 @@
   {
     "author": "李白",
     "title": "夜宿山寺",
-    "tier": "basic",
-    "lines": [
-      "危楼高百尺",
-      "手可摘星辰"
-    ],
     "source": {
       "url": "https://zh.wikisource.org/zh/夜宿山寺",
       "review": "通行文本人工核对；上游存在异文，采用此出处所列原句"
@@ -207,11 +142,6 @@
   {
     "author": "李贺",
     "title": "马诗·其五",
-    "tier": "basic",
-    "lines": [
-      "大漠沙如雪",
-      "燕山月似钩"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/mingju/juv_e4ce9ced8cfe.aspx",
       "review": "通行文本人工核对；上游存在异文，采用此出处所列原句"
@@ -221,11 +151,6 @@
   {
     "author": "杨万里",
     "title": "宿新市徐公店",
-    "tier": "basic",
-    "lines": [
-      "儿童急走追黄蝶",
-      "飞入菜花无处寻"
-    ],
     "source": {
       "file": "全唐诗/poet.song.142000.json",
       "index": 95,
@@ -236,11 +161,6 @@
   {
     "author": "欧阳修",
     "title": "生查子·元夕",
-    "tier": "normal",
-    "lines": [
-      "月上柳梢头",
-      "人约黄昏后"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/mingju_195.aspx",
       "review": "通行文本人工核对；上游存在异文，采用此出处所列原句"
@@ -250,10 +170,6 @@
   {
     "author": "许浑",
     "title": "咸阳城东楼",
-    "tier": "normal",
-    "lines": [
-      "山雨欲来风满楼"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.28000.json",
       "index": 999,
@@ -264,10 +180,6 @@
   {
     "author": "李清照",
     "title": "一剪梅",
-    "tier": "normal",
-    "lines": [
-      "此情无计可消除"
-    ],
     "source": {
       "file": "宋词/ci.song.6000.json",
       "index": 693,
@@ -278,10 +190,6 @@
   {
     "author": "王贞白",
     "title": "白鹿洞二首·其一",
-    "tier": "basic",
-    "lines": [
-      "一寸光阴一寸金"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.50000.json",
       "index": 883,
@@ -293,10 +201,6 @@
   {
     "author": "苏轼",
     "title": "和董传留别",
-    "tier": "normal",
-    "lines": [
-      "腹有诗书气自华"
-    ],
     "source": {
       "file": "全唐诗/poet.song.44000.json",
       "index": 363,
@@ -308,13 +212,6 @@
   {
     "author": "颜真卿",
     "title": "劝学诗",
-    "tier": "basic",
-    "lines": [
-      "三更灯火五更鸡",
-      "正是男儿读书时",
-      "黑发不知勤学早",
-      "白首方悔读书迟"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_6a23fa2dab40.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -325,11 +222,6 @@
   {
     "author": "赵翼",
     "title": "论诗五首·其二",
-    "tier": "normal",
-    "lines": [
-      "江山代有才人出",
-      "各领风骚数百年"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_c1e5416e8000.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -340,11 +232,6 @@
   {
     "author": "李白",
     "title": "经乱离后天恩流夜郎忆旧游书怀赠江夏韦太守良宰",
-    "tier": "normal",
-    "lines": [
-      "清水出芙蓉",
-      "天然去雕饰"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.8000.json",
       "index": 299,
@@ -356,11 +243,6 @@
   {
     "author": "杜甫",
     "title": "奉赠韦左丞丈二十二韵",
-    "tier": "basic",
-    "lines": [
-      "读书破万卷",
-      "下笔如有神"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.10000.json",
       "index": 567,
@@ -372,11 +254,6 @@
   {
     "author": "陆游",
     "title": "文章",
-    "tier": "normal",
-    "lines": [
-      "文章本天成",
-      "妙手偶得之"
-    ],
     "source": {
       "file": "全唐诗/poet.song.136000.json",
       "index": 530,
@@ -388,11 +265,6 @@
   {
     "author": "赵恒",
     "title": "劝学诗",
-    "tier": "normal",
-    "lines": [
-      "书中自有颜如玉",
-      "书中自有黄金屋"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_a23349cddf1e.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -403,10 +275,6 @@
   {
     "author": "苏轼",
     "title": "望江南·超然台作",
-    "tier": "normal",
-    "lines": [
-      "诗酒趁年华"
-    ],
     "source": {
       "file": "宋词/ci.song.1000.json",
       "index": 553,
@@ -418,10 +286,6 @@
   {
     "author": "辛弃疾",
     "title": "贺新郎·甚矣吾衰矣",
-    "tier": "normal",
-    "lines": [
-      "我见青山多妩媚"
-    ],
     "source": {
       "file": "宋词/ci.song.11000.json",
       "index": 363,
@@ -433,11 +297,6 @@
   {
     "author": "刘禹锡",
     "title": "酬乐天咏老见示",
-    "tier": "normal",
-    "lines": [
-      "莫道桑榆晚",
-      "为霞尚满天"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_e07317133df0.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -448,11 +307,6 @@
   {
     "author": "李白",
     "title": "上李邕",
-    "tier": "normal",
-    "lines": [
-      "大鹏一日同风起",
-      "扶摇直上九万里"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_6983ce743726.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -463,11 +317,6 @@
   {
     "author": "黄蘖禅师",
     "title": "上堂开示颂",
-    "tier": "normal",
-    "lines": [
-      "不经一番寒彻骨",
-      "怎得梅花扑鼻香"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_d99474e71e35.aspx",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -478,10 +327,6 @@
   {
     "author": "陆游",
     "title": "病起书怀",
-    "tier": "normal",
-    "lines": [
-      "位卑未敢忘忧国"
-    ],
     "source": {
       "file": "全唐诗/poet.song.128000.json",
       "index": 380,
@@ -493,11 +338,6 @@
   {
     "author": "苏轼",
     "title": "和子由渑池怀旧",
-    "tier": "normal",
-    "lines": [
-      "人生到处知何似",
-      "应似飞鸿踏雪泥"
-    ],
     "source": {
       "file": "全唐诗/poet.song.44000.json",
       "index": 231,
@@ -509,11 +349,6 @@
   {
     "author": "鱼玄机",
     "title": "赠邻女",
-    "tier": "normal",
-    "lines": [
-      "易求无价宝",
-      "难得有情郎"
-    ],
     "source": {
       "url": "https://www.guoxuemeng.com/gushici/477623.html",
       "review": "2026-09-15 核对通行原文；上游未匹配所选完整句，按所引原文显式补充"
@@ -524,11 +359,6 @@
   {
     "author": "李白",
     "title": "长干行",
-    "tier": "normal",
-    "lines": [
-      "郎骑竹马来",
-      "绕床弄青梅"
-    ],
     "source": {
       "file": "全唐诗/poet.tang.8000.json",
       "index": 46,
@@ -540,13 +370,6 @@
   {
     "author": "王维",
     "title": "相思",
-    "tier": "basic",
-    "lines": [
-      "红豆生南国",
-      "春来发几枝",
-      "愿君多采撷",
-      "此物最相思"
-    ],
     "source": {
       "file": "蒙学/tangshisanbaishou.json",
       "index": "content/0/content/3",
@@ -557,19 +380,40 @@
   {
     "author": "李白",
     "title": "月下独酌四首·其一",
-    "tier": "normal",
-    "lines": [
-      "花间一壶酒",
-      "独酌无相亲",
-      "举杯邀明月",
-      "对影成三人",
-      "我歌月徘徊",
-      "我舞影零乱"
-    ],
     "source": {
       "url": "https://www.gushiwen.cn/shiwenv_3185407c5519.aspx",
       "review": "通行文本人工核对；上游《全唐诗》《唐诗三百首》《御定全唐詩》一致作“我歌月裴回”，采用此出处所列通行句“我歌月徘徊”"
     },
     "basis": "熟悉名句补充白名单；仅取全篇中脱开上下文仍可独立辨识的六句，其余八句不出题；分层为编辑判断，不代表搜索频率统计"
+  },
+  {
+    "author": "李商隐",
+    "title": "乐游原",
+    "source": {
+      "file": "蒙学/tangshisanbaishou.json",
+      "index": "content/0/content/12",
+      "title": "登乐游原"
+    },
+    "basis": "熟悉名句补充白名单；逐句编辑分层，不代表搜索频率统计"
+  },
+  {
+    "author": "元稹",
+    "title": "离思",
+    "source": {
+      "file": "全唐诗/poet.tang.21000.json",
+      "index": 866,
+      "title": "离思五首 四"
+    },
+    "basis": "熟悉名句补充白名单；逐句编辑分层，不代表搜索频率统计"
+  },
+  {
+    "author": "陆游",
+    "title": "冬夜读书示子聿",
+    "source": {
+      "file": "全唐诗/poet.song.132000.json",
+      "index": 382,
+      "title": "冬夜读书示子聿八首  其三"
+    },
+    "basis": "熟悉名句补充白名单；逐句编辑分层，不代表搜索频率统计"
   }
 ]
